@@ -37,7 +37,7 @@ export default function HomePage() {
           </h1>
           <p className="hero-description">
             거래하고, 활동을 발견하고, 잃어버린 물건을 찾는
-            <br className="desktop-only" />
+            <br className="desktop-only" />{" "}
             학생 중심 반개방형 커뮤니티입니다.
           </p>
           <div className="hero-actions">
