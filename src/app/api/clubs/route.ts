@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/store";
+import { listClubs } from "@/app/clubs/data";
 
 export async function GET() {
-  return NextResponse.json({ clubs: db.clubs });
+  return NextResponse.json({ clubs: await listClubs() });
 }

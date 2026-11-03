@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import SiteNavigation from "@/components/SiteNavigation";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -7,37 +8,23 @@ export const metadata: Metadata = {
   description: "광덕고 학생을 위한 Market, Clubs, Finder",
 };
 
-const navigation = [
-  { href: "/market", label: "Gwg Market" },
-  { href: "/clubs", label: "Gwg Clubs" },
-  { href: "/finder", label: "Gwg Finder" },
-];
-
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko">
       <body>
+        <a className="skip-link" href="#main-content">본문으로 바로가기</a>
         <header className="site-header">
           <div className="header-inner">
             <Link className="brand" href="/">
               <span className="brand-mark">G</span>
               <span>GwgCommunity</span>
             </Link>
-            <nav className="desktop-nav" aria-label="주요 메뉴">
-              {navigation.map((item) => (
-                <Link key={item.href} href={item.href}>
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-            <Link className="header-login" href="/auth/login">
-              로그인
-            </Link>
+            <SiteNavigation />
           </div>
         </header>
-        <main>{children}</main>
+        <main id="main-content" tabIndex={-1}>{children}</main>
         <footer className="site-footer">
           <div>
             <strong>GwgCommunity</strong>

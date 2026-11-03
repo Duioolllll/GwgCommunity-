@@ -1,0 +1,24 @@
+import { headers } from "next/headers";
+import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth";
+import { errorResponse, jsonBody } from "@/lib/api";
+import { getDb } from "@/lib/db";
+import { marketId } from "@/features/market/data";
+import { ReservationError, transitionReservation } from "@/features/market/reservations";
+
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const user = await getCurrentUser(await headers());
+  if (!user) return errorResponse("UNAUTHENTICATED", "학생 로그인이 필요합니다.", 401);
+  if (!user.emailVerified || user.status !== "ACTIVE_STUDENT") return errorResponse("FORBIDDEN", "학생 인증이 필요합니다.", 403);
+  const { id } = await params;
+  if (!marketId.safeParse(id).success) return errorResponse("NOT_FOUND", "상품을 찾을 수 없습니다.", 404);
+  const body = await jsonBody(request);
+  if (body?.action !== "cancel" && body?.action !== "complete") return errorResponse("INVALID_INPUT", "거래 상태를 확인하세요.", 400);
+  try {
+    await transitionReservation(getDb(), id, user.id, body.action);
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    if (error instanceof ReservationError) return errorResponse(error.code, error.code === "FORBIDDEN" ? "권한이 없습니다." : "변경할 수 없는 거래입니다.", error.code === "FORBIDDEN" ? 403 : 409);
+    throw error;
+  }
+}

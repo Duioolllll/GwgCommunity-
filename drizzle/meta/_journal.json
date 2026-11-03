@@ -8,6 +8,20 @@
       "when": 1793708924358,
       "tag": "0000_high_colossus",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793709544491,
+      "tag": "0001_normal_jigsaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793709755491,
+      "tag": "0002_brief_felicia_hardy",
+      "breakpoints": true
     }
   ]
 }

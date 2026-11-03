@@ -2,17 +2,28 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { PostImagesInput } from "./PostImagesInput";
 
 export function FinderForm() {
   const router = useRouter();
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [imageIds, setImageIds] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
+    setError("");
     const form = new FormData(event.currentTarget);
-    const response = await fetch("/api/finder", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(Object.fromEntries(form.entries())) });
-    const data = await response.json();
-    if (!response.ok) setError(data.message ?? "등록에 실패했습니다.");
-    else router.push("/finder");
+    try {
+      const response = await fetch("/api/finder", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...Object.fromEntries(form.entries()), imageIds }) });
+      const data = await response.json();
+      if (!response.ok) setError(data.message ?? "등록에 실패했습니다.");
+      else { router.push("/finder"); router.refresh(); }
+    } catch {
+      setError("연결에 실패했습니다. 다시 시도해 주세요.");
+    } finally { setSubmitting(false); }
   }
   return <form className="auth-form" onSubmit={submit}>
     <label>유형<select name="kind" defaultValue="lost"><option value="lost">분실물</option><option value="found">습득물</option></select></label>
@@ -21,7 +32,9 @@ export function FinderForm() {
     <label>색상<input name="color" required placeholder="검정색" /></label>
     <label>대략적인 장소<input name="generalLocation" required placeholder="본관 2층 부근" /></label>
     <label>날짜<input name="occurredAt" type="date" required /></label>
+    <PostImagesInput onChange={setImageIds} onPending={setUploading} />
+    <p>등록한 글은 검토 후 공개되며, 그 전에는 본인에게만 보입니다.</p>
     {error && <p className="form-error">{error}</p>}
-    <button className="button button-dark" type="submit">분실물 등록하기</button>
+    <button className="button button-dark" type="submit" disabled={submitting || uploading}>{submitting ? "등록 중..." : "분실물 등록하기"}</button>
   </form>;
 }

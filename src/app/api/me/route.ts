@@ -1,9 +1,10 @@
-import { cookies } from "next/headers";
+import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import { getUser } from "@/lib/store";
+import { getCurrentUser } from "@/lib/auth";
+import { errorResponse } from "@/lib/api";
 
 export async function GET() {
-  const token = (await cookies()).get("gwg_session")?.value;
-  const user = getUser(token);
-  return NextResponse.json({ user: user ? { id: user.id, email: user.email, nickname: user.nickname, role: user.role } : null });
+  const user = await getCurrentUser(await headers());
+  if (!user) return errorResponse("UNAUTHENTICATED", "로그인이 필요합니다.", 401);
+  return NextResponse.json({ user }, { headers: { "Cache-Control": "no-store" } });
 }

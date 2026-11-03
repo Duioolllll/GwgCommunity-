@@ -32,5 +32,6 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm db:check
       - run: pnpm db:migrate
+      - run: pnpm test:unit
       - run: pnpm test:integration
       - run: pnpm build

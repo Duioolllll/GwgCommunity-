@@ -1,17 +1,30 @@
+import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { createInvitation, db, getUser } from "@/lib/store";
+import { desc } from "drizzle-orm";
+import { getCurrentUser } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { invitations } from "@/lib/db/schema";
 import { errorResponse } from "@/lib/api";
+import { issueInvitation } from "@/features/invitations/service";
+import { hasTrustedOrigin } from "@/lib/auth/origin";
 
-export async function POST() {
-  const user = getUser((await cookies()).get("gwg_session")?.value);
-  if (!user) return errorResponse("UNAUTHENTICATED", "로그인이 필요합니다.", 401);
-  if (user.role !== "admin") return errorResponse("FORBIDDEN", "관리자 권한이 필요합니다.", 403);
-  return NextResponse.json({ code: createInvitation(), expiresInDays: 7 }, { status: 201 });
+async function admin() {
+  const user = await getCurrentUser(await headers());
+  return user?.emailVerified && user.status === "ACTIVE_STUDENT" && user.role === "admin" ? user : null;
+}
+
+export async function POST(request: Request) {
+  if (!hasTrustedOrigin(request)) return errorResponse("FORBIDDEN", "요청 출처를 확인할 수 없습니다.", 403);
+  const user = await admin();
+  if (!user) return errorResponse("FORBIDDEN", "관리자 권한이 필요합니다.", 403);
+  const secret = process.env.INVITATION_SECRET;
+  if (!secret) throw new Error("INVITATION_SECRET is required");
+  const invitation = await issueInvitation(getDb(), user.id, secret);
+  return NextResponse.json(invitation, { status: 201, headers: { "Cache-Control": "no-store" } });
 }
 
 export async function GET() {
-  const user = getUser((await cookies()).get("gwg_session")?.value);
-  if (!user || user.role !== "admin") return errorResponse("FORBIDDEN", "관리자 권한이 필요합니다.", 403);
-  return NextResponse.json({ invitations: db.invitations.map(({ codeHash, ...item }) => ({ ...item, codeHash: `${codeHash.slice(0, 8)}…` })) });
+  if (!await admin()) return errorResponse("FORBIDDEN", "관리자 권한이 필요합니다.", 403);
+  const rows = await getDb().select({ id: invitations.id, issuedBy: invitations.issuedBy, createdAt: invitations.createdAt, expiresAt: invitations.expiresAt, redeemedAt: invitations.redeemedAt, revokedAt: invitations.revokedAt }).from(invitations).orderBy(desc(invitations.createdAt)).limit(100);
+  return NextResponse.json({ invitations: rows }, { headers: { "Cache-Control": "no-store" } });
 }

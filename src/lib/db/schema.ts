@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { boolean, check, date, index, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
+import { bigint, boolean, check, date, index, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 
 // Better Auth core tables. Privileged fields must never be accepted from sign-up input.
 export const userRole = pgEnum("user_role", ["student", "admin"]);
@@ -52,6 +52,16 @@ export const verification = pgTable("verification", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("verification_identifier_idx").on(t.identifier)]);
+
+// Better Auth's database rate limiter uses atomic conditional updates.
+export const rateLimit = pgTable("rate_limit", {
+  id: text("id").primaryKey(), key: text("key").notNull().unique(),
+  count: integer("count").notNull(), lastRequest: bigint("last_request", { mode: "number" }).notNull(),
+});
+export const invitationAttempts = pgTable("invitation_attempts", {
+  userId: text("user_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
+  count: integer("count").notNull(), windowStart: timestamp("window_start", { withTimezone: true }).notNull(),
+});
 
 export const invitations = pgTable("invitations", {
   id: uuid("id").primaryKey().defaultRandom(), codeHash: text("code_hash").notNull().unique(),
@@ -128,3 +138,10 @@ export const auditLogs = pgTable("audit_logs", {
   entityType: varchar("entity_type", { length: 50 }).notNull(), entityId: text("entity_id").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("audit_created_idx").on(t.createdAt)]);
+
+// A media asset may be attached to exactly one post, avoiding cross-post disclosure.
+export const postMedia = pgTable("post_media", {
+  mediaId: uuid("media_id").primaryKey().references(() => mediaAssets.id, { onDelete: "cascade" }),
+  marketPostId: uuid("market_post_id").references(() => marketPosts.id, { onDelete: "cascade" }),
+  finderPostId: uuid("finder_post_id").references(() => finderPosts.id, { onDelete: "cascade" }),
+}, (t) => [check("post_media_exactly_one_post", sql`(${t.marketPostId} IS NOT NULL)::integer + (${t.finderPostId} IS NOT NULL)::integer = 1`), index("post_media_market_idx").on(t.marketPostId), index("post_media_finder_idx").on(t.finderPostId)]);
