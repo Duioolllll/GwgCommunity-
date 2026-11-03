@@ -1,5 +1,5 @@
 import { and, desc, eq } from "drizzle-orm";
-import { auditLogs, clubPosts, clubs, finderPosts, marketPosts, reports, user } from "@/lib/db/schema";
+import { auditLogs, clubPosts, clubs, finderPosts, marketPosts, mediaAssets, postMedia, reports, user } from "@/lib/db/schema";
 import type { Database } from "@/lib/db/types";
 
 export const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -63,6 +63,35 @@ export async function reviewFinder(db: Database, actorId: string, id: string, de
     const [changed] = await tx.update(finderPosts).set({ publicApproval: decision }).where(and(eq(finderPosts.id, id), eq(finderPosts.publicApproval, "PENDING"), eq(finderPosts.status, "ACTIVE"))).returning({ id: finderPosts.id });
     if (!changed) throw new ModerationError("CONFLICT");
     await tx.insert(auditLogs).values({ actorId, action: `finder.${decision.toLowerCase()}`, entityType: "finder_post", entityId: id });
+    return changed;
+  });
+}
+
+export async function listPendingMedia(db: Database, actorId: string) {
+  await requireActor(db, actorId, true);
+  return db.select({
+    id: mediaAssets.id,
+    contentType: mediaAssets.contentType,
+    size: mediaAssets.size,
+    createdAt: mediaAssets.createdAt,
+    marketPostId: postMedia.marketPostId,
+    finderPostId: postMedia.finderPostId,
+  }).from(mediaAssets)
+    .leftJoin(postMedia, eq(postMedia.mediaId, mediaAssets.id))
+    .where(eq(mediaAssets.moderation, "PENDING"))
+    .orderBy(desc(mediaAssets.createdAt), desc(mediaAssets.id))
+    .limit(100);
+}
+
+export async function reviewMedia(db: Database, actorId: string, id: string, decision: Approval) {
+  return db.transaction(async tx => {
+    await requireActor(tx, actorId, true);
+    const [changed] = await tx.update(mediaAssets)
+      .set({ moderation: decision })
+      .where(and(eq(mediaAssets.id, id), eq(mediaAssets.moderation, "PENDING")))
+      .returning({ id: mediaAssets.id });
+    if (!changed) throw new ModerationError("CONFLICT");
+    await tx.insert(auditLogs).values({ actorId, action: `media.${decision.toLowerCase()}`, entityType: "media_asset", entityId: id });
     return changed;
   });
 }

@@ -1,5 +1,9 @@
 # GwgCommunity
 
+## 기여자
+
+Codex, Copilot
+
 광덕고 학생을 위한 비공식 커뮤니티 프로젝트입니다. Gwg Market, Gwg Clubs, Gwg Finder를 제공하며, 학교의 공식 서비스가 아닙니다. 제품 범위와 개발 명세는 [기획·설계서](docs/planning-and-spec.md)를 참고하세요.
 
 ## 개발 환경

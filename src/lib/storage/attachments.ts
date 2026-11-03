@@ -34,9 +34,9 @@ export async function visibleImages(db: Database, target: "market" | "finder", i
     )));
   return rows;
 }
-export async function readVisibleImage(db: Database, store: ObjectStore, id: string, viewerId?: string) {
+export async function readVisibleImage(db: Database, store: ObjectStore, id: string, viewerId?: string, isAdmin = false) {
   const [asset] = await db.select({ storageKey: mediaAssets.storageKey, contentType: mediaAssets.contentType }).from(mediaAssets).leftJoin(postMedia, eq(postMedia.mediaId, mediaAssets.id)).leftJoin(marketPosts, eq(marketPosts.id, postMedia.marketPostId)).leftJoin(finderPosts, eq(finderPosts.id, postMedia.finderPostId)).where(and(eq(mediaAssets.id, id), or(
-    viewerId ? eq(mediaAssets.ownerId, viewerId) : undefined,
+    isAdmin ? eq(mediaAssets.id, id) : viewerId ? eq(mediaAssets.ownerId, viewerId) : undefined,
     and(eq(mediaAssets.moderation, "APPROVED"), or(eq(marketPosts.ownerId, mediaAssets.ownerId), and(eq(finderPosts.ownerId, mediaAssets.ownerId), eq(finderPosts.publicApproval, "APPROVED"), eq(finderPosts.status, "ACTIVE"))))
   )));
   if (!asset) return null;
