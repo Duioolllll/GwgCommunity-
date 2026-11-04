@@ -5,6 +5,13 @@ RUN corepack enable
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
+FROM dependencies AS migrations
+COPY drizzle.config.ts ./
+COPY drizzle ./drizzle
+COPY src/lib/db/schema.ts ./src/lib/db/schema.ts
+USER node
+CMD ["node", "node_modules/drizzle-kit/bin.cjs", "migrate"]
+
 FROM dependencies AS build
 COPY next.config.ts tsconfig.json next-env.d.ts eslint.config.mjs ./
 COPY src ./src

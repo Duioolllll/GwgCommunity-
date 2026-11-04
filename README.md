@@ -38,4 +38,4 @@ corepack pnpm build
 
 ## 현재 상태
 
-기능 구현과 통합 검증이 진행 중입니다. PostgreSQL/Drizzle, 이메일 확인과 초대 코드, Market·Clubs·Finder의 주요 흐름을 연결하고 있습니다. 실제 학생 대상 운영이나 배포가 완료된 상태는 아닙니다. 도메인, 학교 협의, SMTP·Cloudflare·R2 설정, 운영 보안 점검, 백업 복구 및 실사용 검증이 남아 있습니다. 운영 인프라 준비 내용은 [운영 문서](docs/OPERATIONS.md)를 참고하세요.
+PostgreSQL/Drizzle, 이메일 확인과 초대 코드, Market·Clubs·Finder의 주요 흐름이 연결되어 있습니다. 실제 학생 대상 운영이나 배포가 완료된 상태는 아닙니다. 우분투 서버 설치·마이그레이션·HTTPS 설정은 [운영 문서](docs/OPERATIONS.md#우분투-서버-docker-compose)를 참고하세요. 기존 R2 버킷은 서버 환경 파일에 연결 정보를 설정해 재사용할 수 있습니다.

@@ -1,4 +1,4 @@
-name: ARM64 image build
+name: Linux image build (amd64 and arm64)
 on:
   pull_request:
   push:
@@ -19,11 +19,11 @@ jobs:
           repo="${GITHUB_REPOSITORY,,}"
           repo="${repo%-}"
           echo "name=ghcr.io/${repo}:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
-      - name: Build GHCR-tagged ARM64 image without publishing
+      - name: Build Linux images without publishing
         uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: linux/arm64
+          platforms: linux/amd64,linux/arm64
           push: false
           tags: ${{ steps.image.outputs.name }}
           cache-from: type=gha

@@ -1,4 +1,30 @@
-# 운영 준비 초안
+# 운영 준비 및 배포
+
+## 우분투 서버 Docker Compose
+
+`deploy/compose.ubuntu.yaml`은 Ubuntu x86-64 및 ARM64에서 해당 서버의 아키텍처로 이미지를 빌드한다. 앱은 `127.0.0.1:3000`에만 바인딩되고 PostgreSQL은 호스트 포트를 열지 않는다. 서버에 [Docker Engine과 Compose 플러그인](https://docs.docker.com/engine/install/ubuntu/)을 설치하고, 도메인의 DNS가 서버를 가리키게 한다. 이 구성은 호스트 Nginx를 통해 HTTPS를 제공하며 기존 Cloudflare Tunnel 구성(`deploy/compose.yaml`)과 별개다.
+
+서버에서 저장소를 체크아웃한 후 프로젝트 루트에서 실행한다.
+
+```sh
+cp deploy/.env.example deploy/.env
+chmod 600 deploy/.env
+# 편집기에서 deploy/.env를 설정한다.
+docker compose --env-file deploy/.env -f deploy/compose.ubuntu.yaml config --quiet
+docker compose --env-file deploy/.env -f deploy/compose.ubuntu.yaml --profile tools build app migrate
+docker compose --env-file deploy/.env -f deploy/compose.ubuntu.yaml up -d --wait db
+docker compose --env-file deploy/.env -f deploy/compose.ubuntu.yaml --profile tools run --rm migrate
+docker compose --env-file deploy/.env -f deploy/compose.ubuntu.yaml up -d --no-build app
+docker compose --env-file deploy/.env -f deploy/compose.ubuntu.yaml ps
+```
+
+`deploy/.env`에서 PostgreSQL 비밀번호를 생성하고 `DATABASE_URL`에도 같은 값을 넣는다. URL의 호스트는 `db`다. `BETTER_AUTH_SECRET`과 `INVITATION_SECRET`은 서로 다른 32바이트 이상 난수, `BETTER_AUTH_URL`은 실제 HTTPS 주소로 설정한다. SMTP와 이미 연결한 R2 버킷의 네 가지 설정을 서버 환경 파일에 넣는다. 시크릿·환경 파일·SSH 개인키는 Git에 올리지 않는다. 개발용 `.env.local`을 운영 서버에 그대로 복사하지 않는다.
+
+호스트에서 Nginx를 설치하고 `deploy/nginx.conf.example`을 Nginx 사이트 설정으로 복사한 뒤 도메인과 필요 시 `APP_PORT`를 맞춘다. Nginx 설정을 검사하고 재시작한 다음 Certbot 등으로 인증서를 발급해 HTTPS를 활성화한다. 방화벽과 클라우드 보안 그룹에서 웹 포트와 관리 경로를 설정하고, PostgreSQL 포트는 공개하지 않는다. 서비스가 기존에 있는 서버라면 80·443 및 앱 포트 충돌을 먼저 확인한다. 가입 메일, 로그인, 초대 코드, R2 이미지 업로드·조회와 백업 복원을 실제 배포 환경에서 확인한다.
+
+업데이트할 때는 DB 백업을 확인한 뒤 새 커밋을 받은 상태에서 이미지 빌드, 마이그레이션, 앱 교체 순서로 같은 명령을 실행한다. `down -v`는 데이터 볼륨까지 삭제하므로 운영 데이터가 있는 환경에서 사용하지 않는다. 첫 관리자 권한은 [인증 문서](AUTH.md)에 따라 별도로 부여한다.
+
+## Cloudflare Tunnel을 이용하는 기존 구성
 
 이 구성은 아직 배포하거나 학교 운영 승인을 받은 상태가 아니다. 도메인, 장비, Cloudflare, SMTP, 백업 저장소와 비밀값은 운영자가 별도로 준비해야 한다. `deploy/compose.yaml`은 app, PostgreSQL, cloudflared를 실행하며 호스트 포트를 게시하지 않는다. DB는 내부 전용 네트워크에 있고 앱과 터널만 별도 네트워크를 공유한다. 앱과 터널은 외부 SMTP/Cloudflare에 연결할 수 있다. Docker 호스트 관리자에게는 컨테이너와 네트워크 접근 권한이 있다.
 
