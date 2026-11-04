@@ -30,7 +30,7 @@ docker compose --env-file deploy/.env -f deploy/compose.ubuntu.yaml ps
 
 ## 이미지와 배포 전 준비
 
-- CI는 테스트와 별도로 `linux/arm64` 이미지를 빌드하고 GHCR 형식으로 태그만 지정한다. `push: false`이므로 GHCR에 업로드하거나 배포하지 않는다. 실제 게시 및 배포는 별도의 권한과 승인된 절차가 필요하다. Pi에서 사용할 ARM64 이미지의 출처와 digest를 검증한다.
+- CI는 테스트와 별도로 `linux/amd64` 및 `linux/arm64` 이미지를 빌드하고 GHCR 형식으로 태그만 지정한다. `push: false`이므로 GHCR에 업로드하거나 배포하지 않는다. 실제 게시 및 배포는 별도의 권한과 승인된 절차가 필요하다. 사용할 이미지의 출처와 digest를 검증한다.
 - Pi의 외장 SSD에 Docker 데이터 디렉터리 또는 DB 볼륨을 영속화하고, 전원·냉각·용량을 확인한다. 볼륨은 Compose 프로젝트 이름에 따라 생성되므로 경로와 복구 대상을 확인한다. 서비스 계정의 최소 권한, OS/Docker 업데이트 및 호스트 접근 통제를 설정한다.
 - 배포 환경에서 `APP_IMAGE`를 검증된 `ghcr.io/…@sha256:…` digest로 지정한다. PostgreSQL과 cloudflared의 현재 태그도 운영 전 검증된 버전 또는 digest로 고정하고 업데이트 정책을 정한다.
 - Git에 포함되지 않는 제한된 권한의 환경 파일에 `POSTGRES_USER`, `POSTGRES_DB`, `POSTGRES_PASSWORD`, `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `INVITATION_SECRET`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `TUNNEL_TOKEN`을 설정한다. `DATABASE_URL`의 호스트는 `db`이고 계정·암호·DB 이름은 PostgreSQL 설정과 일치해야 한다. URL 특수 문자는 퍼센트 인코딩한다. 인증과 초대 비밀은 별도의 충분히 긴 난수로 생성한다. Compose 환경 변수와 터널 인자는 호스트 관리자에게 보일 수 있으므로 호스트 권한을 제한한다.
