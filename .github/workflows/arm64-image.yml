@@ -15,7 +15,10 @@ jobs:
       - uses: docker/setup-buildx-action@v3
       - name: Prepare image name
         id: image
-        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+        run: |
+          repo="${GITHUB_REPOSITORY,,}"
+          repo="${repo%-}"
+          echo "name=ghcr.io/${repo}:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
       - name: Build GHCR-tagged ARM64 image without publishing
         uses: docker/build-push-action@v6
         with:
