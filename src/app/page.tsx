@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ServiceIcon } from "@/components/ServiceIcon";
 
 const services = [
   {
@@ -7,6 +8,7 @@ const services = [
     description: "교내에서 안전하게 사고팔고, 나누는 공간",
     href: "/market",
     action: "상품 둘러보기",
+    kind: "market" as const,
   },
   {
     number: "02",
@@ -14,6 +16,7 @@ const services = [
     description: "동아리와 학생 프로젝트를 발견하는 공간",
     href: "/clubs",
     action: "동아리 둘러보기",
+    kind: "clubs" as const,
   },
   {
     number: "03",
@@ -21,6 +24,7 @@ const services = [
     description: "잃어버린 물건과 습득물을 연결하는 공간",
     href: "/finder",
     action: "분실물 찾아보기",
+    kind: "finder" as const,
   },
 ];
 
@@ -49,10 +53,17 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
-        <div className="hero-note" aria-label="서비스 안내">
-          <span>학생이 만들고</span>
-          <span>학생이 사용하는</span>
-          <span className="note-strong">비공식 프로젝트</span>
+        <div className="hero-board" aria-hidden="true">
+          <div className="hero-board-top"><span>GWG COMMUNITY</span><span>STUDENT MADE ↗</span></div>
+          <div className="hero-board-center">
+            <div className="hero-board-orbit orbit-one" />
+            <div className="hero-board-orbit orbit-two" />
+            <div className="hero-board-symbol symbol-market"><ServiceIcon kind="market" /></div>
+            <div className="hero-board-symbol symbol-clubs"><ServiceIcon kind="clubs" /></div>
+            <div className="hero-board-symbol symbol-finder"><ServiceIcon kind="finder" /></div>
+            <div className="hero-board-center-label">G<span>W</span>G</div>
+          </div>
+          <div className="hero-board-bottom"><span>우리의 학교생활을<br />조금 더 가깝게.</span><span>MARKET / CLUBS / FINDER</span></div>
         </div>
       </section>
 
@@ -67,7 +78,7 @@ export default function HomePage() {
         <div className="service-grid">
           {services.map((service) => (
             <Link className="service-card" href={service.href} key={service.name}>
-              <span className="service-number">{service.number}</span>
+              <div className="service-card-top"><span className="service-number">{service.number} / {service.name.replace("Gwg ", "").toUpperCase()}</span><span className="service-icon-frame"><ServiceIcon kind={service.kind} /></span></div>
               <div>
                 <h3>{service.name}</h3>
                 <p>{service.description}</p>

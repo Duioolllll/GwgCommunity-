@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { visibleImages } from "@/lib/storage/attachments";
+import { ServiceIcon } from "@/components/ServiceIcon";
 import { headers } from "next/headers";
 import { getCurrentUser } from "@/lib/auth";
 import { getDb } from "@/lib/db";
@@ -24,7 +25,7 @@ export default async function FinderPage({ searchParams }: { searchParams: Promi
   return (
     <div className="subpage page-shell">
       <div className="subpage-heading">
-        <div><p className="eyebrow">GWG FINDER</p><h1>분실물 찾기</h1><p>잃어버린 물건과 습득물을 안전하게 연결합니다.</p></div>
+        <div><p className="eyebrow service-eyebrow"><span className="service-heading-icon"><ServiceIcon kind="finder" /></span>GWG FINDER</p><h1>분실물 찾기</h1><p>잃어버린 물건과 습득물을 안전하게 연결합니다.</p></div>
         <Link className="button button-dark" href="/finder/new">등록하기 <span aria-hidden>↗</span></Link>
       </div>
       <div className="finder-banner"><strong>물건을 찾고 있나요?</strong><span>정확한 위치와 연락처는 공개하지 않습니다. 소유권은 비공개로 확인합니다.</span></div>
@@ -39,7 +40,7 @@ export default async function FinderPage({ searchParams }: { searchParams: Promi
       <div className="finder-list">
         {posts.map(post => <article className="finder-row" key={post.id}>
           <span className={`finder-kind ${post.kind}`}>{post.kind === "lost" ? "분실" : "습득"}</span>
-          <div>{images.filter(image => image.finderPostId === post.id).map(image => <Image unoptimized key={image.id} src={`/api/media/${image.id}`} alt={`${post.title} 이미지`} width={100} height={100} style={{ objectFit: "contain" }} />)}<h2>{post.title}</h2><p>{post.category} · {post.color} · {post.generalLocation}</p>{post.isOwn && <Link className="finder-match-link" href={`/finder/${post.id}/matches`}>추천 후보 보기 →</Link>}</div>
+          <div>{images.filter(image => image.finderPostId === post.id).map(image => <Image unoptimized key={image.id} src={`/api/media/${image.id}`} alt={`${post.title} 이미지`} width={100} height={100} style={{ objectFit: "contain" }} />)}<h2>{post.title}</h2><p>{post.category} · {post.color} · {post.generalLocation}</p>{post.isOwn && <Link className="finder-match-link" href={`/finder/${post.id}`}>내 글 관리 →</Link>}</div>
           <time dateTime={post.occurredAt}>{post.occurredAt}</time><span className="card-arrow" aria-hidden>↗</span>
         </article>)}
       </div>

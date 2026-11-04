@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { Pool } from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "../../src/lib/db/schema";
+import { mutateFinderPost } from "../../src/features/finder/service";
 import { createReport, listPendingFinder, listReports, ModerationError, parseReport, reviewFinder, updateReport } from "../../src/features/moderation/service";
 
 const connectionString = process.env.TEST_DATABASE_URL;
@@ -29,8 +30,19 @@ test("moderation checks visibility, ownership, roles, concurrency and audits", a
     const list = await listReports(db, admin);
     const entry = list.find(x => x.id === report.id);
     assert.ok(entry); assert.ok(!("reporterId" in entry));
-    assert.ok((await listPendingFinder(db, admin)).some(x => x.id === pending.id));
-    const decisions = await Promise.allSettled([reviewFinder(db, admin, pending.id, "APPROVED"), reviewFinder(db, admin, pending.id, "REJECTED")]);
+    const beforeEdit = (await listPendingFinder(db, admin)).find(x => x.id === pending.id);
+    assert.ok(beforeEdit);
+    await mutateFinderPost(db, pending.id, owner, { type: "edit", input: {
+      kind: pending.kind, title: "검토 중 수정된 글", category: pending.category, color: pending.color,
+      generalLocation: pending.generalLocation, occurredAt: pending.occurredAt,
+    } });
+    for (const decision of ["APPROVED", "REJECTED"] as const) {
+      await assert.rejects(reviewFinder(db, admin, pending.id, decision, beforeEdit.reviewToken), (e: unknown) => e instanceof ModerationError && e.code === "CONFLICT");
+    }
+    const afterEdit = (await listPendingFinder(db, admin)).find(x => x.id === pending.id);
+    assert.ok(afterEdit);
+    assert.notEqual(afterEdit.reviewToken, beforeEdit.reviewToken);
+    const decisions = await Promise.allSettled([reviewFinder(db, admin, pending.id, "APPROVED", afterEdit.reviewToken), reviewFinder(db, admin, pending.id, "REJECTED", afterEdit.reviewToken)]);
     assert.equal(decisions.filter(x => x.status === "fulfilled").length, 1);
     const updates = await Promise.allSettled([updateReport(db, admin, report.id, "OPEN", "REVIEWED"), updateReport(db, admin, report.id, "OPEN", "RESOLVED")]);
     assert.equal(updates.filter(x => x.status === "fulfilled").length, 1);

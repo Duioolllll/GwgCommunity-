@@ -175,16 +175,29 @@ h1, h2, h3, p { margin-top: 0; }
   .mobile-menu a[aria-current="page"] { font-weight: 700; }
 }
 
-.finder-filters { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin: 0 0 28px; }
+.finder-filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin: 0 0 28px; }
 .finder-filters label { display: grid; gap: 6px; color: var(--muted); font-size: 12px; flex: 1 1 130px; }
 .finder-filters input, .finder-filters select { width: 100%; min-height: 43px; padding: 10px; border: 1px solid var(--line); background: #fff; color: var(--ink); }
 .finder-match-link { display: inline-block; margin-top: 10px; font-size: 12px; text-decoration: underline; }
 .finder-pagination { display: flex; justify-content: center; align-items: center; gap: 24px; margin: 28px 0; font-size: 13px; }
 
-.market-filters { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; margin-bottom: 28px; }
+.market-filters { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 28px; }
 .market-filters label { display: grid; flex: 1 1 130px; gap: 6px; color: var(--muted); font-size: 12px; }
 .market-filters input, .market-filters select { width: 100%; min-height: 43px; padding: 10px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); }
 .market-pagination { display: flex; justify-content: center; gap: 24px; margin-top: 32px; font-size: 13px; }
+.club-filters { display: grid; grid-template-columns: minmax(0, 1fr) minmax(140px, 220px) auto auto; align-items: end; gap: 12px; margin-bottom: 28px; }
+.club-filters > label:not(.club-checkbox) { display: grid; min-width: 0; gap: 6px; color: var(--muted); font-size: 12px; }
+.club-filters input[type="search"], .club-filters select { width: 100%; min-width: 0; min-height: 44px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 0; background: var(--paper); color: var(--ink); font-size: 13px; }
+.club-filters input[type="search"]::placeholder { color: #767676; }
+.club-filters > .button { min-height: 44px; }
+.club-checkbox, .auth-form .club-checkbox { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; color: var(--ink); font-size: 12px; cursor: pointer; }
+.club-checkbox input[type="checkbox"], .auth-form .club-checkbox input[type="checkbox"] { flex: 0 0 18px; width: 18px; height: 18px; margin: 0; padding: 0; accent-color: var(--ink); cursor: pointer; }
+.auth-form .club-checkbox input[type="checkbox"]:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+@media (max-width: 700px) {
+  .club-filters { grid-template-columns: minmax(0, 1fr) auto; gap: 14px 12px; }
+  .club-search-field, .club-category-field { grid-column: 1 / -1; }
+  .club-filters > .button { min-width: 96px; }
+}
 .market-detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 64px; margin-top: 40px; }
 .market-detail-image { height: auto; min-height: 360px; }
 .market-detail h1 { margin-bottom: 16px; font-size: clamp(30px, 4vw, 48px); letter-spacing: -.06em; font-weight: 500; }
@@ -199,3 +212,48 @@ h1, h2, h3, p { margin-top: 0; }
 .my-sections li span { flex-shrink: 0; color: var(--muted); font-size: 12px; }
 .my-sections li a:hover { text-decoration: underline; text-underline-offset: 4px; }
 @media (max-width: 700px) { .my-sections { grid-template-columns: 1fr; gap: 40px; margin-top: 56px; } }
+
+/* A small visual language shared by the three community spaces. */
+.hero { align-items: center; }
+.hero-board { position: relative; flex: 0 1 400px; min-width: 300px; height: 345px; overflow: hidden; border: 1px solid #dededb; background: #f5f5f2; }
+.hero-board-top, .hero-board-bottom { position: absolute; z-index: 1; right: 20px; left: 20px; display: flex; justify-content: space-between; gap: 12px; font-size: 9px; font-weight: 700; letter-spacing: .11em; }
+.hero-board-top { top: 19px; color: #70706c; }
+.hero-board-bottom { bottom: 19px; align-items: flex-end; color: #676763; }
+.hero-board-bottom span:first-child { color: #1b1b1b; font-size: 12px; line-height: 1.5; letter-spacing: -.03em; }
+.hero-board-center { position: absolute; inset: 30px; display: grid; place-items: center; }
+.hero-board-orbit { position: absolute; width: 210px; height: 210px; border: 1px solid #d9d9d4; border-radius: 50%; }
+.orbit-two { width: 145px; height: 145px; }
+.hero-board-center-label { display: flex; align-items: center; justify-content: center; width: 93px; height: 93px; border-radius: 50%; background: #191919; color: #fff; font-size: 22px; letter-spacing: -.09em; font-weight: 700; }
+.hero-board-center-label span { margin-top: 17px; }
+.hero-board-symbol { position: absolute; display: grid; place-items: center; width: 56px; height: 56px; border: 1px solid #d9d9d4; background: #fff; }
+.hero-board-symbol .service-icon { width: 25px; height: 25px; }
+.symbol-market { top: 28px; left: 26%; transform: rotate(-8deg); }
+.symbol-clubs { top: 43%; right: 4%; transform: rotate(8deg); }
+.symbol-finder { bottom: 42px; left: 25%; transform: rotate(5deg); }
+.service-card-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.service-icon-frame { display: grid; place-items: center; width: 58px; height: 58px; border: 1px solid #e3e3df; background: #f7f7f5; }
+.service-icon { display: block; width: 27px; height: 27px; }
+.service-card > .card-arrow { top: auto; bottom: 22px; }
+.service-eyebrow { display: flex; align-items: center; gap: 10px; }
+.service-heading-icon { display: inline-grid; place-items: center; width: 32px; height: 32px; border: 1px solid var(--line); color: var(--ink); }
+.service-heading-icon .service-icon { width: 18px; height: 18px; }
+@media (prefers-reduced-motion: no-preference) {
+  .hero-board { animation: rise-in .65s .1s ease both; }
+  .hero-board-symbol { animation: board-arrive .7s .25s ease both; }
+  .service-card:hover .service-icon-finder, .service-card:focus-visible .service-icon-finder { animation: icon-search 1s ease; }
+  .service-card:hover .service-icon-companion, .service-card:focus-visible .service-icon-companion { animation: icon-companion .55s cubic-bezier(.2, 1.4, .4, 1); }
+  .service-card:hover .service-icon-market, .service-card:focus-visible .service-icon-market { animation: icon-bag .55s ease; }
+  @keyframes board-arrive { from { opacity: 0; translate: 0 12px; } to { opacity: 1; translate: 0 0; } }
+  /* Search and companion movements are adapted from Lucide Animated. */
+  @keyframes icon-search { 0%, 25%, 100% { transform: translate(0, 0); } 50% { transform: translate(0, -4px); } 75% { transform: translate(-3px, 0); } }
+  @keyframes icon-companion { from { transform: translateX(-6px); } to { transform: translateX(0); } }
+  @keyframes icon-bag { 0%, 100% { transform: rotate(0); } 35% { transform: rotate(-8deg); } 65% { transform: rotate(5deg); } }
+}
+@media (max-width: 700px) {
+  .hero-board { min-width: 0; width: 100%; height: 300px; margin-top: 48px; }
+  .hero-board-center { inset: 20px; }
+  .hero-board-symbol { width: 48px; height: 48px; }
+  .symbol-market { top: 24px; }
+  .symbol-finder { bottom: 42px; }
+  .service-card { min-height: 245px; }
+}

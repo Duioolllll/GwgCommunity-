@@ -11,7 +11,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const id = (await params).id;
   if (!z.string().uuid().safeParse(id).success) return errorResponse("NOT_FOUND", "이미지를 찾을 수 없습니다.", 404);
   try {
-    const asset = await readVisibleImage(getDb(), getObjectStore(), id, viewerId, viewer?.role === "admin");
+    const asset = await readVisibleImage(getDb(), getObjectStore(), id, viewerId, !!viewerId && viewer?.role === "admin");
     if (!asset) return errorResponse("NOT_FOUND", "이미지를 찾을 수 없습니다.", 404);
     return new Response(Buffer.from(asset.data), { headers: { "Content-Type": asset.contentType, "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff", "Content-Security-Policy": "default-src 'none'; sandbox" } });
   } catch { console.error("Media retrieval failed"); return errorResponse("STORAGE_ERROR", "이미지를 불러오지 못했습니다.", 500); }

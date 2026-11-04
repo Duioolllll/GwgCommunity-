@@ -13,8 +13,10 @@ export const marketInput = z.object({
 export const marketId = z.string().uuid();
 export const marketStatusLabels = { AVAILABLE: "판매 중", RESERVED: "예약 중", COMPLETED: "거래 완료" } as const;
 
-export type MarketFilters = { q?: string; category?: string; status?: string; minPrice?: string; maxPrice?: string; page?: string };
-export function parseFilters(input: MarketFilters) {
+export type MarketFilters = { q?: string | string[]; category?: string | string[]; status?: string | string[]; minPrice?: string | string[]; maxPrice?: string | string[]; page?: string | string[] };
+export function parseFilters(raw: MarketFilters) {
+  const first = (value: string | string[] | undefined) => Array.isArray(value) ? value[0] : value;
+  const input = { q: first(raw.q), category: first(raw.category), status: first(raw.status), minPrice: first(raw.minPrice), maxPrice: first(raw.maxPrice), page: first(raw.page) };
   const q = (input.q ?? "").trim().slice(0, 100);
   const category = categories.find((value) => value === input.category) ?? "";
   const status = (["AVAILABLE", "RESERVED", "COMPLETED"] as const).find((value) => value === input.status) ?? "";

@@ -177,6 +177,28 @@ test("HTTP signup, verification, invitation, authorization and sign-out", { time
     assert.equal(current.user?.status, "ACTIVE_STUDENT");
     assert.equal((await call("/api/admin/invitations", {}, cookie)).status, 403);
     assert.equal((await call("/api/invitations/redeem", { code: invitation.code }, cookie)).status, 403);
+    const finderInput = { kind: "lost", title: "HTTP 검증 지갑", category: "잡화", color: "검정", generalLocation: "본관", occurredAt: "2026-11-03" };
+    response = await call("/api/finder", finderInput, cookie);
+    assert.equal(response.status, 201, await response.clone().text());
+    const finderId = (await response.json()).post.id;
+    const mutateFinder = (method: string, body?: object, sessionCookie = cookie, origin = baseURL, id = finderId) => fetch(`${baseURL}/api/finder/${id}`, {
+      method, headers: { origin, "content-type": "application/json", cookie: sessionCookie },
+      ...(body ? { body: JSON.stringify(body) } : {}),
+    });
+    assert.equal((await mutateFinder("PATCH", finderInput, "")).status, 401);
+    assert.equal((await mutateFinder("PATCH", finderInput, cookie, "https://evil.example")).status, 403);
+    assert.equal((await mutateFinder("PATCH", { ...finderInput, ownerId: targetId })).status, 400);
+    const [otherPost] = await db.insert(schema.finderPosts).values({ ...finderInput, kind: "found", ownerId: targetId }).returning();
+    assert.equal((await mutateFinder("DELETE", undefined, cookie, baseURL, otherPost.id)).status, 403);
+    response = await mutateFinder("PATCH", { ...finderInput, title: "수정된 지갑" });
+    assert.equal(response.status, 200, await response.clone().text());
+    const ownPage = await call(`/finder/${finderId}`, undefined, cookie);
+    assert.equal(ownPage.status, 200);
+    assert.ok((await ownPage.text()).includes("수정된 지갑"));
+    assert.equal((await mutateFinder("PATCH", { action: "close" })).status, 200);
+    assert.equal((await mutateFinder("PATCH", finderInput)).status, 409);
+    assert.equal((await mutateFinder("DELETE")).status, 200);
+    assert.equal((await mutateFinder("DELETE")).status, 404);
     response = await call("/api/auth/sign-out", {}, cookie);
     assert.equal(response.status, 200);
     assert.equal((await call("/api/me", undefined, cookie)).status, 401);

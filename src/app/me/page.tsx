@@ -19,7 +19,7 @@ export default async function MePage() {
     db.select({ id: marketPosts.id, title: marketPosts.title, status: marketPosts.status }).from(marketPosts).where(eq(marketPosts.ownerId, user.id)).orderBy(desc(marketPosts.createdAt)).limit(20),
     db.select({ reservationId: marketReservations.id, id: marketPosts.id, title: marketPosts.title, status: marketReservations.status }).from(marketReservations).innerJoin(marketPosts, eq(marketReservations.postId, marketPosts.id)).where(eq(marketReservations.requesterId, user.id)).orderBy(desc(marketReservations.createdAt)).limit(20),
     db.select({ id: finderPosts.id, title: finderPosts.title, kind: finderPosts.kind, status: finderPosts.status }).from(finderPosts).where(eq(finderPosts.ownerId, user.id)).orderBy(desc(finderPosts.createdAt)).limit(20),
-    db.select({ applicationId: clubApplications.id, clubId: clubs.id, clubName: clubs.name, title: clubRecruitments.title, status: clubApplications.status }).from(clubApplications).innerJoin(clubRecruitments, eq(clubRecruitments.id, clubApplications.recruitmentId)).innerJoin(clubs, eq(clubs.id, clubRecruitments.clubId)).where(eq(clubApplications.applicantId, user.id)).orderBy(desc(clubApplications.createdAt)).limit(20),
+    db.select({ applicationId: clubApplications.id, clubSlug: clubs.slug, clubName: clubs.name, title: clubRecruitments.title, status: clubApplications.status }).from(clubApplications).innerJoin(clubRecruitments, eq(clubRecruitments.id, clubApplications.recruitmentId)).innerJoin(clubs, eq(clubs.id, clubRecruitments.clubId)).where(eq(clubApplications.applicantId, user.id)).orderBy(desc(clubApplications.createdAt)).limit(20),
   ]);
   const applicationLabels = { SUBMITTED: "접수", IN_REVIEW: "검토 중", ACCEPTED: "승인", REJECTED: "거절", CANCELLED: "취소" } as const;
   const reservationLabels = { ACTIVE: "예약 중", CANCELLED: "취소", COMPLETED: "거래 완료" } as const;
@@ -28,8 +28,8 @@ export default async function MePage() {
     <div className="my-sections">
       <section><h2>내 상품</h2>{market.length ? <ul>{market.map(item => <li key={item.id}><Link href={`/market/${item.id}`}>{item.title}</Link><span>{marketStatusLabels[item.status]}</span></li>)}</ul> : <p className="muted-copy">등록한 상품이 없습니다.</p>}</section>
       <section><h2>내 거래 신청</h2>{reservations.length ? <ul>{reservations.map(item => <li key={item.reservationId}><Link href={`/market/${item.id}`}>{item.title}</Link><span>{reservationLabels[item.status]}</span></li>)}</ul> : <p className="muted-copy">신청한 거래가 없습니다.</p>}</section>
-      <section><h2>내 분실물 글</h2>{finder.length ? <ul>{finder.map(item => <li key={item.id}><Link href={`/finder/${item.id}/matches`}>{item.title}</Link><span>{item.kind === "lost" ? "분실" : "습득"} · {item.status === "ACTIVE" ? "진행 중" : "종료"}</span></li>)}</ul> : <p className="muted-copy">등록한 분실물 글이 없습니다.</p>}</section>
-      <section><h2>동아리 지원</h2>{applications.length ? <ul>{applications.map(item => <li key={item.applicationId}><Link href={`/clubs/${item.clubId}`}>{item.clubName} · {item.title}</Link><span>{applicationLabels[item.status]}</span></li>)}</ul> : <p className="muted-copy">지원한 동아리가 없습니다.</p>}</section>
+      <section><h2>내 분실물 글</h2>{finder.length ? <ul>{finder.map(item => <li key={item.id}><Link href={`/finder/${item.id}`}>{item.title}</Link><span>{item.kind === "lost" ? "분실" : "습득"} · {item.status === "ACTIVE" ? "진행 중" : "종료"}</span></li>)}</ul> : <p className="muted-copy">등록한 분실물 글이 없습니다.</p>}</section>
+      <section><h2>동아리 지원</h2>{applications.length ? <ul>{applications.map(item => <li key={item.applicationId}><Link href={`/clubs/${encodeURIComponent(item.clubSlug)}`}>{item.clubName} · {item.title}</Link><span>{applicationLabels[item.status]}</span></li>)}</ul> : <p className="muted-copy">지원한 동아리가 없습니다.</p>}</section>
     </div>
   </div>;
 }

@@ -1,11 +1,21 @@
 import Link from "next/link";
+import Image from "next/image";
+import { headers } from "next/headers";
+import { getCurrentUser } from "@/lib/auth";
 import { getDb } from "@/lib/db";
+import { visibleImages } from "@/lib/storage/attachments";
+import { ServiceIcon } from "@/components/ServiceIcon";
 import { categories, listMarketPosts, marketStatusLabels, parseFilters, type MarketFilters } from "@/features/market/data";
 
 export const dynamic = "force-dynamic";
 export default async function MarketPage({ searchParams }: { searchParams: Promise<MarketFilters> }) {
   const filters = parseFilters(await searchParams);
   const { posts, hasNext } = await listMarketPosts(getDb(), { ...filters, minPrice: filters.minPrice?.toString(), maxPrice: filters.maxPrice?.toString(), page: String(filters.page) });
+  const viewer = await getCurrentUser(await headers());
+  const viewerId = viewer?.emailVerified && viewer.status === "ACTIVE_STUDENT" ? viewer.id : undefined;
+  const images = await visibleImages(getDb(), "market", posts.map(post => post.id), viewerId);
+  const coverByPost = new Map<string, string>();
+  for (const image of images) if (image.marketPostId && !coverByPost.has(image.marketPostId)) coverByPost.set(image.marketPostId, image.id);
   function pageHref(page: number) {
     const query = new URLSearchParams();
     if (filters.q) query.set("q", filters.q);
@@ -17,7 +27,7 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
     return `/market?${query}`;
   }
   return <div className="subpage page-shell">
-    <div className="subpage-heading"><div><p className="eyebrow">GWG MARKET</p><h1>교내 중고거래</h1><p>필요한 물건을 찾고, 쓰지 않는 물건을 나눠보세요.</p></div><Link className="button button-dark" href="/market/new">글 작성하기 <span aria-hidden>↗</span></Link></div>
+    <div className="subpage-heading"><div><p className="eyebrow service-eyebrow"><span className="service-heading-icon"><ServiceIcon kind="market" /></span>GWG MARKET</p><h1>교내 중고거래</h1><p>필요한 물건을 찾고, 쓰지 않는 물건을 나눠보세요.</p></div><Link className="button button-dark" href="/market/new">글 작성하기 <span aria-hidden>↗</span></Link></div>
     <form className="market-filters" action="/market">
       <label>검색<input name="q" type="search" defaultValue={filters.q} maxLength={100} placeholder="상품명 검색" /></label>
       <label>카테고리<select name="category" defaultValue={filters.category}><option value="">전체</option>{categories.map((category) => <option key={category}>{category}</option>)}</select></label>
@@ -27,7 +37,7 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
       <button className="button button-dark" type="submit">검색</button>
     </form>
     {posts.length ? <div className="listing-grid">{posts.map((post) => <Link className="listing-card" href={`/market/${post.id}`} key={post.id}>
-      <div className="listing-image" aria-hidden /><div className="listing-content"><span className="card-label">{post.category}</span><h2>{post.title}</h2><div className="listing-meta"><strong>{post.price === 0 ? "나눔" : `${post.price.toLocaleString("ko-KR")}원`}</strong><span>{marketStatusLabels[post.status]}</span></div></div>
+      <div className="listing-image" aria-hidden>{coverByPost.has(post.id) && <Image unoptimized src={`/api/media/${coverByPost.get(post.id)}`} alt="" width={400} height={225} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}</div><div className="listing-content"><span className="card-label">{post.category}</span><h2>{post.title}</h2><div className="listing-meta"><strong>{post.price === 0 ? "나눔" : `${post.price.toLocaleString("ko-KR")}원`}</strong><span>{marketStatusLabels[post.status]}</span></div></div>
     </Link>)}</div> : <p className="empty-note">조건에 맞는 상품이 없습니다. 검색 조건을 바꾸거나 첫 상품을 등록해 보세요.</p>}
     <nav className="market-pagination" aria-label="상품 목록 페이지">{filters.page > 1 && <Link href={pageHref(filters.page - 1)}>← 이전</Link>}<span>{filters.page} 페이지</span>{hasNext && <Link href={pageHref(filters.page + 1)}>다음 →</Link>}</nav>
   </div>;

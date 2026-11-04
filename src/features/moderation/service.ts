@@ -1,4 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
+import { createHash } from "node:crypto";
+import type { FinderInput } from "@/features/finder/posts";
 import { auditLogs, clubPosts, clubs, finderPosts, marketPosts, mediaAssets, postMedia, reports, user } from "@/lib/db/schema";
 import type { Database } from "@/lib/db/types";
 
@@ -46,7 +48,12 @@ export async function listReports(db: Database, actorId: string) {
 }
 export async function listPendingFinder(db: Database, actorId: string) {
   await requireActor(db, actorId, true);
-  return db.select({ id: finderPosts.id, kind: finderPosts.kind, title: finderPosts.title, category: finderPosts.category, color: finderPosts.color, generalLocation: finderPosts.generalLocation, occurredAt: finderPosts.occurredAt, createdAt: finderPosts.createdAt }).from(finderPosts).where(and(eq(finderPosts.publicApproval, "PENDING"), eq(finderPosts.status, "ACTIVE"))).orderBy(desc(finderPosts.createdAt), desc(finderPosts.id)).limit(100);
+  const posts = await db.select({ id: finderPosts.id, kind: finderPosts.kind, title: finderPosts.title, category: finderPosts.category, color: finderPosts.color, generalLocation: finderPosts.generalLocation, occurredAt: finderPosts.occurredAt, createdAt: finderPosts.createdAt }).from(finderPosts).where(and(eq(finderPosts.publicApproval, "PENDING"), eq(finderPosts.status, "ACTIVE"))).orderBy(desc(finderPosts.createdAt), desc(finderPosts.id)).limit(100);
+  return posts.map(post => ({ ...post, reviewToken: finderReviewToken(post) }));
+}
+function finderReviewToken(post: FinderInput & { id: string }) {
+  // Hash only the content shown to the reviewer, in a stable order.
+  return createHash("sha256").update(JSON.stringify([post.id, post.kind, post.title, post.category, post.color, post.generalLocation, post.occurredAt])).digest("hex");
 }
 export async function updateReport(db: Database, actorId: string, id: string, from: ReportState, to: ReportState) {
   return db.transaction(async tx => {
@@ -57,9 +64,11 @@ export async function updateReport(db: Database, actorId: string, id: string, fr
     return changed;
   });
 }
-export async function reviewFinder(db: Database, actorId: string, id: string, decision: Approval) {
+export async function reviewFinder(db: Database, actorId: string, id: string, decision: Approval, reviewToken: string) {
   return db.transaction(async tx => {
     await requireActor(tx, actorId, true);
+    const [post] = await tx.select().from(finderPosts).where(eq(finderPosts.id, id)).for("update");
+    if (!post || post.publicApproval !== "PENDING" || post.status !== "ACTIVE" || finderReviewToken(post) !== reviewToken) throw new ModerationError("CONFLICT");
     const [changed] = await tx.update(finderPosts).set({ publicApproval: decision }).where(and(eq(finderPosts.id, id), eq(finderPosts.publicApproval, "PENDING"), eq(finderPosts.status, "ACTIVE"))).returning({ id: finderPosts.id });
     if (!changed) throw new ModerationError("CONFLICT");
     await tx.insert(auditLogs).values({ actorId, action: `finder.${decision.toLowerCase()}`, entityType: "finder_post", entityId: id });

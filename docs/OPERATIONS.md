@@ -7,9 +7,9 @@
 - CI는 테스트와 별도로 `linux/arm64` 이미지를 빌드하고 GHCR 형식으로 태그만 지정한다. `push: false`이므로 GHCR에 업로드하거나 배포하지 않는다. 실제 게시 및 배포는 별도의 권한과 승인된 절차가 필요하다. Pi에서 사용할 ARM64 이미지의 출처와 digest를 검증한다.
 - Pi의 외장 SSD에 Docker 데이터 디렉터리 또는 DB 볼륨을 영속화하고, 전원·냉각·용량을 확인한다. 볼륨은 Compose 프로젝트 이름에 따라 생성되므로 경로와 복구 대상을 확인한다. 서비스 계정의 최소 권한, OS/Docker 업데이트 및 호스트 접근 통제를 설정한다.
 - 배포 환경에서 `APP_IMAGE`를 검증된 `ghcr.io/…@sha256:…` digest로 지정한다. PostgreSQL과 cloudflared의 현재 태그도 운영 전 검증된 버전 또는 digest로 고정하고 업데이트 정책을 정한다.
-- Git에 포함되지 않는 제한된 권한의 환경 파일에 `POSTGRES_USER`, `POSTGRES_DB`, `POSTGRES_PASSWORD`, `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `INVITATION_SECRET`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `TUNNEL_TOKEN`을 설정한다. `DATABASE_URL`의 호스트는 `db`이고 계정·암호·DB 이름은 PostgreSQL 설정과 일치해야 한다. URL 특수 문자는 퍼센트 인코딩한다. 인증과 초대 비밀은 별도의 충분히 긴 난수로 생성한다. Compose 환경 변수와 터널 인자는 호스트 관리자에게 보일 수 있으므로 호스트 권한을 제한한다.
+- Git에 포함되지 않는 제한된 권한의 환경 파일에 `POSTGRES_USER`, `POSTGRES_DB`, `POSTGRES_PASSWORD`, `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `INVITATION_SECRET`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `TUNNEL_TOKEN`을 설정한다. `DATABASE_URL`의 호스트는 `db`이고 계정·암호·DB 이름은 PostgreSQL 설정과 일치해야 한다. URL 특수 문자는 퍼센트 인코딩한다. 인증과 초대 비밀은 별도의 충분히 긴 난수로 생성한다. Compose 환경 변수와 터널 인자는 호스트 관리자에게 보일 수 있으므로 호스트 권한을 제한한다.
 - Cloudflare에서 별도로 Tunnel과 공개 호스트명을 설정하고 서비스 원본을 `http://app:3000`으로 지정한다. 공개 사이트에 Access 로그인을 강제하지 않는다. DNS, HTTPS, WAF, 요청 제한 및 원본 우회 방지 설정은 별도 확인한다. 앱/DB 포트를 호스트나 라우터에 공개하지 않는다.
-- SMTP의 TLS와 발신자 설정을 검증하고, 실제 인증 메일 수신을 시험한다. 사진 저장소와 이미지 메타데이터 제거는 아직 구성되지 않았다.
+- SMTP의 TLS와 발신자 설정을 검증하고, 실제 인증 메일 수신을 시험한다. 앱에는 비공개 R2 저장과 이미지 재인코딩을 통한 메타데이터 제거가 구현되어 있다. 로컬 설정의 R2 버킷 접근은 읽기 전용 검사로 확인했지만, 운영 환경의 자격 증명과 버킷 설정, 업로드·조회·삭제 흐름 및 배포는 별도로 검증해야 한다.
 
 Compose 구성은 `docker compose --env-file <안전한 환경 파일> -f deploy/compose.yaml config --quiet`로 검사한다. 운영 환경에서 이미지 게시와 마이그레이션이 승인된 뒤 `docker compose --env-file <환경 파일> -f deploy/compose.yaml up -d`를 사용한다. 환경 파일이나 `docker compose config`의 전체 출력을 로그에 남기지 않는다. 앱 healthcheck는 홈 페이지의 HTTP 응답만 검사하며 DB 연결이나 전체 서비스 정상 여부를 보증하지 않는다. DB healthcheck는 PostgreSQL의 연결 수락 여부를 검사한다. 외부 HTTPS와 로그인, 학생 권한은 별도로 시험한다.
 

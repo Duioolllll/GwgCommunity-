@@ -12,7 +12,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (!uuidPattern.test(id)) return errorResponse("NOT_FOUND", "게시물을 찾을 수 없습니다.", 404);
   if (!isJson(request)) return errorResponse("INVALID_INPUT", "JSON 요청이 필요합니다.", 415);
   const body = await jsonBody(request);
-  if (!body || (body.decision !== "APPROVED" && body.decision !== "REJECTED")) return errorResponse("INVALID_INPUT", "검토 결과를 확인하세요.", 400);
-  try { return NextResponse.json({ post: await reviewFinder(getDb(), viewer.id, id, body.decision) }, { headers: { "Cache-Control": "no-store" } }); }
+  if (!body || (body.decision !== "APPROVED" && body.decision !== "REJECTED") || typeof body.reviewToken !== "string" || !/^[a-f0-9]{64}$/.test(body.reviewToken)) return errorResponse("INVALID_INPUT", "검토 목록을 새로 불러온 뒤 다시 시도하세요.", 400);
+  try { return NextResponse.json({ post: await reviewFinder(getDb(), viewer.id, id, body.decision, body.reviewToken) }, { headers: { "Cache-Control": "no-store" } }); }
   catch (error) { return failure(error); }
 }

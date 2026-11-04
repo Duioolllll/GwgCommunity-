@@ -2,12 +2,45 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { Pool } from "pg";
+import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "../../src/lib/db/schema";
 import { listFinderPosts } from "../../src/features/finder/posts";
-import { FinderMatchError, getFinderMatches } from "../../src/features/finder/service";
+import { FinderMatchError, FinderMutationError, getFinderMatches, mutateFinderPost } from "../../src/features/finder/service";
 
 const connectionString = process.env.TEST_DATABASE_URL;
+test("Finder mutations enforce account and ownership, re-review edits, and preserve attachments", { skip: !connectionString }, async () => {
+  const pool = new Pool({ connectionString });
+  const db = drizzle(pool, { schema });
+  const prefix = `finder-mutation-${randomUUID()}`;
+  const owner = `${prefix}-owner`, other = `${prefix}-other`, suspended = `${prefix}-suspended`;
+  try {
+    await db.insert(schema.user).values([owner, other, suspended].map(id => ({ id, name: id, email: `${id}@example.test`, emailVerified: true, status: id === suspended ? "SUSPENDED" as const : "ACTIVE_STUDENT" as const })));
+    const input = { kind: "lost" as const, title: "지갑", category: "잡화", color: "검정", generalLocation: "본관", occurredAt: "2026-11-03" };
+    const [post] = await db.insert(schema.finderPosts).values({ ...input, ownerId: owner, publicApproval: "APPROVED" }).returning();
+    const [asset] = await db.insert(schema.mediaAssets).values({ ownerId: owner, storageKey: prefix, contentType: "image/png", size: 10 }).returning();
+    await db.insert(schema.postMedia).values({ mediaId: asset.id, finderPostId: post.id });
+    await assert.rejects(mutateFinderPost(db, post.id, other, { type: "delete" }), (e: unknown) => e instanceof FinderMutationError && e.code === "FORBIDDEN");
+    await assert.rejects(mutateFinderPost(db, post.id, suspended, { type: "close" }), (e: unknown) => e instanceof FinderMutationError && e.code === "FORBIDDEN");
+    await mutateFinderPost(db, post.id, owner, { type: "edit", input: { ...input, title: "수정한 지갑" } });
+    const [edited] = await db.select().from(schema.finderPosts).where(eq(schema.finderPosts.id, post.id));
+    assert.equal(edited.title, "수정한 지갑");
+    assert.equal(edited.publicApproval, "PENDING");
+    assert.equal((await db.select().from(schema.postMedia).where(eq(schema.postMedia.mediaId, asset.id))).length, 1);
+    assert.ok(!(await listFinderPosts(db)).some(item => item.id === post.id));
+    await mutateFinderPost(db, post.id, owner, { type: "close" });
+    assert.ok(!(await listFinderPosts(db, owner)).some(item => item.id === post.id));
+    await assert.rejects(mutateFinderPost(db, post.id, owner, { type: "edit", input }), (e: unknown) => e instanceof FinderMutationError && e.code === "CONFLICT");
+    await mutateFinderPost(db, post.id, owner, { type: "delete" });
+    assert.equal((await db.select().from(schema.postMedia).where(eq(schema.postMedia.mediaId, asset.id))).length, 0);
+    assert.equal((await db.select().from(schema.mediaAssets).where(eq(schema.mediaAssets.id, asset.id))).length, 1);
+  } finally {
+    await pool.query("DELETE FROM finder_posts WHERE owner_id = ANY($1::text[])", [[owner, other, suspended]]);
+    await pool.query("DELETE FROM media_assets WHERE owner_id = ANY($1::text[])", [[owner, other, suspended]]);
+    await pool.query('DELETE FROM "user" WHERE id = ANY($1::text[])', [[owner, other, suspended]]);
+    await pool.end();
+  }
+});
 test("database visibility and match authorization", { skip: !connectionString }, async () => {
   const pool = new Pool({ connectionString });
   const db = drizzle(pool, { schema });
