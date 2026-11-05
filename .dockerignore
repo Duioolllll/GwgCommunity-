@@ -14,3 +14,9 @@ coverage
 *.pfx
 id_rsa
 id_ed25519
+.venv
+backups
+python_app/development.sqlite3
+python_app/private_uploads
+python_app/static_collected
+**/__pycache__

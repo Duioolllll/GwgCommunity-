@@ -11,3 +11,10 @@ npm-debug.log*
 *.pfx
 id_rsa
 id_ed25519
+.venv/
+__pycache__/
+*.pyc
+python_app/development.sqlite3
+backups/
+python_app/private_uploads/
+python_app/static_collected/

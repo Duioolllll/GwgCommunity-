@@ -1,0 +1,29 @@
+# Prepare a separate Python DB and env file. This does not replace the current service.
+services:
+  app:
+    image: ${PYTHON_APP_IMAGE:?set a verified image}
+    env_file: ${PYTHON_ENV_FILE:?set the protected Django env file}
+    environment:
+      DJANGO_DEBUG: '0'
+    ports:
+      - '127.0.0.1:${PYTHON_APP_PORT:-18080}:8000'
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${PYTHON_DB_USER:?set database user}
+      POSTGRES_PASSWORD: ${PYTHON_DB_PASSWORD:?set database password}
+      POSTGRES_DB: ${PYTHON_DB_NAME:?set database name}
+    volumes:
+      - python-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    restart: unless-stopped
+volumes:
+  python-db:

@@ -1,3 +1,5 @@
+> 레거시 Next.js 운영 문서입니다. Django의 현재 전환 절차는 [Python 전환 운영 가이드](PYTHON_MIGRATION.md)를 사용하세요.
+
 # 운영 준비 및 배포
 
 ## 우분투 서버 Docker Compose

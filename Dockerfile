@@ -1,30 +1,11 @@
-# Build on the target platform; Next's standalone output runs without dev dependencies.
-FROM node:24-bookworm-slim AS dependencies
+FROM python:3.12-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /app
-RUN corepack enable
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
-
-FROM dependencies AS migrations
-COPY drizzle.config.ts ./
-COPY drizzle ./drizzle
-COPY src/lib/db/schema.ts ./src/lib/db/schema.ts
-USER node
-CMD ["node", "node_modules/drizzle-kit/bin.cjs", "migrate"]
-
-FROM dependencies AS build
-COPY next.config.ts tsconfig.json next-env.d.ts eslint.config.mjs ./
-COPY src ./src
-ENV NEXT_TELEMETRY_DISABLED=1
-RUN pnpm build
-
-FROM node:24-bookworm-slim AS runtime
-WORKDIR /app
-ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 HOSTNAME=0.0.0.0 PORT=3000
-COPY --from=build --chown=node:node /app/.next/standalone ./
-COPY --from=build --chown=node:node /app/.next/static ./.next/static
-COPY --chown=node:node licenses ./licenses
-USER node
-EXPOSE 3000
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 CMD node -e "require('http').get('http://127.0.0.1:3000/',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"
-CMD ["node", "server.js"]
+COPY python_app/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt && useradd --system --uid 10001 --no-create-home app
+COPY python_app /app/python_app
+RUN DJANGO_DEBUG=1 python /app/python_app/manage.py collectstatic --noinput && chown -R app:app /app/python_app/static_collected
+USER app
+WORKDIR /app/python_app
+EXPOSE 8000
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "60"]
