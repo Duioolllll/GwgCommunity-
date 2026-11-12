@@ -26,3 +26,16 @@ TEMPLATE_SOURCES = {
     'registration/password_reset_email.txt': "GwgCommunity 비밀번호 재설정을 요청하셨습니다.\n{{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}\n",
     'registration/password_reset_form.html': '{% extends \'base.html\' %}{% block content %}<div class="content-shell form-shell"><h1>비밀번호 재설정</h1><p>가입한 이메일을 입력하면 재설정 링크를 보내드립니다.</p><form method="post">{% csrf_token %}{{ form.as_p }}<button>메일 보내기</button></form></div>{% endblock %}\n',
 }
+
+
+# Override the original home page with the Python-owned landing design. Keep all
+# other templates and routes unchanged. The page_styles block sits in <head>
+# and is populated only on pages that explicitly define it.
+from .landing_source import LANDING_PAGE
+
+TEMPLATE_SOURCES['base.html'] = TEMPLATE_SOURCES['base.html'].replace(
+    '</style></head>',
+    '</style>{% block page_styles %}{% endblock %}</head>',
+    1,
+)
+TEMPLATE_SOURCES['home.html'] = LANDING_PAGE
