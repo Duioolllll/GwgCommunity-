@@ -25,3 +25,30 @@ Django의 보안 쿠키는 HTTPS를 요구한다. `DJANGO_TRUST_FORWARDED_PROTO=
 ## 전환과 롤백
 
 준비한 이미지를 격리 환경에서 검증하고 별도 DB에 복사한 뒤 Nginx upstream 변경으로 전환한다. 기존 앱·DB·R2 백업과 이전 이미지 digest를 유지한다. 새 서버에서 쓰기가 발생한 후 이전 서버로 단순 전환하면 그 이후 데이터가 누락되므로, 롤백 시 쓰기 중지·데이터 정합성·복원 범위를 먼저 결정한다. 배포와 실제 데이터 복사는 자동으로 실행하지 않는다.
+
+
+## 2026-11-05 서버 전환 기록
+
+- Compose 프로젝트 `gwgcommunity-python`, 이미지 `gwgcommunity-python:local`, 앱 포트 `127.0.0.1:18080`으로 실행했다. 전용 PostgreSQL DB는 `gwg_python`이다.
+- 환경 파일은 Git에서 제외되는 `deploy/.env.python`과 `deploy/.env.python-compose`이며 권한은 600이다. 시크릿 값을 출력하거나 커밋하지 않는다.
+- 기존 앱의 쓰기를 중지한 후 `import_legacy --apply`를 완료했다. 이전 대상 15개 테이블의 행 수는 모두 0이었다. 원본 DB와 기존 앱 컨테이너는 보존했다.
+- 원본 백업은 `backups/python-migration-20261105-203742/legacy.dump`에 저장하고, 새 PostgreSQL의 별도 DB `legacy_restore_verify`에 복원하여 검증했다. 이 백업은 로컬 권한 제한 파일이며 외부 암호화 백업은 별도 준비가 필요하다. R2 객체는 변경하지 않았다.
+- Nginx는 `/etc/nginx/sites-available/sunmyxd.tech`에서 Django로 연결한다. 이전 설정은 `/etc/nginx/sites-available/sunmyxd.tech.before-python-20261105-203908`에 보존했다.
+- PostgreSQL에서 테스트 27개를 모두 통과했다. 테스트 실행에만 `DJANGO_DEBUG=1`, `DJANGO_SECURE_SSL_REDIRECT=0`을 적용했다. 운영 앱은 DEBUG=0과 HTTPS 강제를 유지한다.
+- 원본 HTTPS에서 홈, 로그인, Market, Clubs, Finder가 200을 반환했다. 외부 요청은 Cloudflare의 `cf-mitigated: challenge`와 403을 반환하여 일반 브라우저에서 추가 확인이 필요하다.
+- SMTP 항목은 비어 있다. 이메일 인증과 비밀번호 재설정은 SMTP 설정 및 실제 수신 검증 후 사용할 수 있다. `check --deploy`에는 HSTS 미설정 경고 1개가 남아 있다.
+
+상태 확인:
+
+```sh
+docker compose -p gwgcommunity-python --env-file deploy/.env.python-compose -f deploy/compose.python.yaml ps
+```
+
+새 앱에서 쓰기가 발생한 이후에는 이전 앱으로 바로 되돌리지 않는다. 쓰기를 중지하고 새 데이터 보존·이관 범위를 먼저 결정한다.
+
+
+### 응답 속도 패치 (2026-11-05)
+
+운영 이미지는 `gwgcommunity-python:perf`로 갱신했다. Django 템플릿 파싱 캐시, 해시가 포함된 공통 CSS와 WhiteNoise 압축·장기 캐시, Gunicorn 2개 워커 × 4개 스레드, Nginx upstream keepalive를 적용했다. HTML 응답 자체는 공유 캐시하지 않는다.
+
+동일 장비에서 앱 직접 호출 중앙값은 홈 6.6→4.4ms, Market 13.3→9.6ms였다. 홈 HTML은 27,348→4,575바이트로 줄었고 공통 CSS는 gzip 약 5KB로 최초 로드 후 재사용한다. PostgreSQL 테스트 27개가 통과했고 배포 후 주요 HTTPS 경로 5개가 200을 반환했다. 외부 Cloudflare challenge 때문에 실제 사용자 환경의 종단 간 속도는 별도 확인해야 한다.

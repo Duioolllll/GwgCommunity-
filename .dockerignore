@@ -20,3 +20,15 @@ python_app/development.sqlite3
 python_app/private_uploads
 python_app/static_collected
 **/__pycache__
+
+**/.env
+**/.env.*
+!**/.env.example
+next_engine
+
+venv
+pynext_app/.pynext
+pynext_app/static_collected
+pynext_app/private_uploads
+pynext_app/tests
+pynext_app/benchmarks

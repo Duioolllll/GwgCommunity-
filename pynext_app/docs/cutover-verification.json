@@ -1,0 +1,161 @@
+{
+  "timestamp_utc": "2026-11-15T13:09:36.460339+00:00",
+  "records": [
+    {
+      "path": "/health/database",
+      "method": "GET",
+      "status": 200,
+      "framework": "PyNext/0.1.2",
+      "content_type": "application/json",
+      "bytes": 16,
+      "origin": true
+    },
+    {
+      "path": "/healthz/",
+      "method": "GET",
+      "status": 200,
+      "framework": "PyNext/0.1.2",
+      "content_type": "application/json",
+      "bytes": 16,
+      "origin": true
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "framework": "PyNext/0.1.2",
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 4575,
+      "origin": true
+    },
+    {
+      "path": "/market/",
+      "method": "GET",
+      "status": 200,
+      "framework": "PyNext/0.1.2",
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 2515,
+      "origin": true
+    },
+    {
+      "path": "/clubs/",
+      "method": "GET",
+      "status": 200,
+      "framework": "PyNext/0.1.2",
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 2049,
+      "origin": true
+    },
+    {
+      "path": "/finder/",
+      "method": "GET",
+      "status": 200,
+      "framework": "PyNext/0.1.2",
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 2278,
+      "origin": true
+    },
+    {
+      "path": "/api/market",
+      "method": "GET",
+      "status": 200,
+      "framework": "PyNext/0.1.2",
+      "content_type": "application/json",
+      "bytes": 42,
+      "origin": true
+    },
+    {
+      "path": "/api/clubs",
+      "method": "GET",
+      "status": 200,
+      "framework": "PyNext/0.1.2",
+      "content_type": "application/json",
+      "bytes": 42,
+      "origin": true
+    },
+    {
+      "path": "/auth/login/",
+      "method": "GET",
+      "status": 200,
+      "framework": "PyNext/0.1.2",
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 2139,
+      "origin": true
+    },
+    {
+      "path": "/api/csrf",
+      "method": "GET",
+      "status": 200,
+      "framework": "PyNext/0.1.2",
+      "content_type": "application/json",
+      "bytes": 12,
+      "origin": true
+    },
+    {
+      "path": "/api/me",
+      "method": "GET",
+      "status": 401,
+      "framework": "PyNext/0.1.2",
+      "content_type": "application/json",
+      "bytes": 147,
+      "origin": true
+    },
+    {
+      "path": "/api/market",
+      "method": "POST",
+      "status": 403,
+      "framework": "PyNext/0.1.2",
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 2127,
+      "origin": true
+    },
+    {
+      "path": "/api/market/not-a-uuid",
+      "method": "GET",
+      "status": 404,
+      "framework": "PyNext/0.1.2",
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 179,
+      "origin": true
+    },
+    {
+      "path": "/static/core/site.d219d7c94734.css",
+      "method": "GET",
+      "status": 200,
+      "framework": "PyNext/0.1.2",
+      "content_type": "text/css; charset=\"utf-8\"",
+      "bytes": 22824,
+      "origin": true
+    },
+    {
+      "path": "/health/database",
+      "method": "GET",
+      "status": 200,
+      "framework": "PyNext/0.1.2",
+      "content_type": "application/json",
+      "bytes": 16,
+      "origin": false
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "framework": "PyNext/0.1.2",
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 6056,
+      "origin": false
+    }
+  ],
+  "external_error": null,
+  "backup": "/home/skqew/GwgCommunity-/backups/pynext-cutover-20261115T125618Z",
+  "db_preserved": true,
+  "table_counts_match": 24,
+  "existing_users": 0,
+  "existing_sessions": 0,
+  "public_browser": {
+    "desktop": "pass",
+    "mobile": "pass",
+    "javascript_errors": 0,
+    "db_health": "ok"
+  }
+}

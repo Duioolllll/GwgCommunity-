@@ -1,6 +1,6 @@
-# GwgCommunity Next Engine
+# 레거시 참고: GwgCommunity Next Engine
 
-This is the isolated Node.js + Next.js implementation of GwgCommunity.
+This is the archived Node.js + Next.js implementation of GwgCommunity. It is not a supported production runtime and is excluded from production images and CI.
 The Django/Python engine remains at the repository root under `python_app/`.
 
 ## Runtime

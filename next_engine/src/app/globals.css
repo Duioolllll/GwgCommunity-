@@ -1,3 +1,4 @@
+/* 화면 스타일: 선택자별 시각 속성과 아래 반응형 조건을 정의한다. */
 :root {
   --ink: #111;
   --muted: #6b6b6b;
@@ -101,6 +102,7 @@ h1, h2, h3, p { margin-top: 0; }
 .quick-card:hover { background: var(--soft); }
 .admin-action { display: flex; align-items: center; gap: 18px; margin-top: 35px; }
 .admin-action code { padding: 15px; border: 1px dashed var(--ink); font-size: 14px; letter-spacing: .08em; }
+/* 반응형 조건 (max-width: 700px): 조건을 만족하는 화면에서만 내부 스타일을 적용한다. */
 @media (max-width: 700px) {
   .page-shell, .header-inner { width: min(100% - 32px, 1180px); }
   .header-inner { min-height: 64px; gap: 0; }
@@ -142,14 +144,17 @@ h1, h2, h3, p { margin-top: 0; }
 .button-dark:hover span { transform: translateX(3px); }
 .service-card { transition: transform .25s ease, background-color .25s ease, border-color .25s ease; }
 .service-card:hover { border-color: #bdbdbd; }
+/* 반응형 조건 (prefers-reduced-motion: no-preference): 조건을 만족하는 화면에서만 내부 스타일을 적용한다. */
 @media (prefers-reduced-motion: no-preference) {
   .hero-copy, .hero-note, .subpage-heading, .auth-card { animation: rise-in .55s ease both; }
   .hero-note { animation-delay: .12s; }
   @keyframes rise-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 }
+/* 반응형 조건 (prefers-reduced-motion: reduce): 조건을 만족하는 화면에서만 내부 스타일을 적용한다. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+/* 반응형 조건 (max-width: 700px): 조건을 만족하는 화면에서만 내부 스타일을 적용한다. */
 @media (max-width: 700px) {
   .hero-actions { flex-wrap: wrap; gap: 18px 24px; }
   .club-info p, .finder-row p { line-height: 1.6; }
@@ -161,6 +166,7 @@ h1, h2, h3, p { margin-top: 0; }
 .skip-link:focus { transform: translateY(0); }
 .desktop-nav a[aria-current="page"] { color: var(--ink); text-decoration: underline; text-underline-offset: 5px; }
 .mobile-navigation { display: none; }
+/* 반응형 조건 (max-width: 700px): 조건을 만족하는 화면에서만 내부 스타일을 적용한다. */
 @media (max-width: 700px) {
   .header-inner { position: relative; }
   .header-login { display: none; }
@@ -193,6 +199,7 @@ h1, h2, h3, p { margin-top: 0; }
 .club-checkbox, .auth-form .club-checkbox { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; color: var(--ink); font-size: 12px; cursor: pointer; }
 .club-checkbox input[type="checkbox"], .auth-form .club-checkbox input[type="checkbox"] { flex: 0 0 18px; width: 18px; height: 18px; margin: 0; padding: 0; accent-color: var(--ink); cursor: pointer; }
 .auth-form .club-checkbox input[type="checkbox"]:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+/* 반응형 조건 (max-width: 700px): 조건을 만족하는 화면에서만 내부 스타일을 적용한다. */
 @media (max-width: 700px) {
   .club-filters { grid-template-columns: minmax(0, 1fr) auto; gap: 14px 12px; }
   .club-search-field, .club-category-field { grid-column: 1 / -1; }
@@ -204,6 +211,7 @@ h1, h2, h3, p { margin-top: 0; }
 .market-price { font-size: 20px; font-weight: 700; }
 .market-description { margin: 36px 0; color: var(--muted); line-height: 1.8; white-space: pre-wrap; }
 .market-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 24px 0; }
+/* 반응형 조건 (max-width: 700px): 조건을 만족하는 화면에서만 내부 스타일을 적용한다. */
 @media (max-width: 700px) { .market-detail-grid { grid-template-columns: 1fr; gap: 32px; } .market-detail-image { min-height: 240px; } }
 .my-sections { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px; margin-top: 72px; }
 .my-sections h2 { margin-bottom: 20px; font-size: 21px; font-weight: 500; letter-spacing: -.04em; }
@@ -211,6 +219,7 @@ h1, h2, h3, p { margin-top: 0; }
 .my-sections li { display: flex; justify-content: space-between; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
 .my-sections li span { flex-shrink: 0; color: var(--muted); font-size: 12px; }
 .my-sections li a:hover { text-decoration: underline; text-underline-offset: 4px; }
+/* 반응형 조건 (max-width: 700px): 조건을 만족하는 화면에서만 내부 스타일을 적용한다. */
 @media (max-width: 700px) { .my-sections { grid-template-columns: 1fr; gap: 40px; margin-top: 56px; } }
 
 /* A small visual language shared by the three community spaces. */
@@ -237,6 +246,7 @@ h1, h2, h3, p { margin-top: 0; }
 .service-eyebrow { display: flex; align-items: center; gap: 10px; }
 .service-heading-icon { display: inline-grid; place-items: center; width: 32px; height: 32px; border: 1px solid var(--line); color: var(--ink); }
 .service-heading-icon .service-icon { width: 18px; height: 18px; }
+/* 반응형 조건 (prefers-reduced-motion: no-preference): 조건을 만족하는 화면에서만 내부 스타일을 적용한다. */
 @media (prefers-reduced-motion: no-preference) {
   .hero-board { animation: rise-in .65s .1s ease both; }
   .hero-board-symbol { animation: board-arrive .7s .25s ease both; }
@@ -249,6 +259,7 @@ h1, h2, h3, p { margin-top: 0; }
   @keyframes icon-companion { from { transform: translateX(-6px); } to { transform: translateX(0); } }
   @keyframes icon-bag { 0%, 100% { transform: rotate(0); } 35% { transform: rotate(-8deg); } 65% { transform: rotate(5deg); } }
 }
+/* 반응형 조건 (max-width: 700px): 조건을 만족하는 화면에서만 내부 스타일을 적용한다. */
 @media (max-width: 700px) {
   .hero-board { min-width: 0; width: 100%; height: 300px; margin-top: 48px; }
   .hero-board-center { inset: 20px; }

@@ -22,7 +22,7 @@ jobs:
       - name: Build Linux images without publishing
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./pynext_app
           platforms: linux/amd64,linux/arm64
           push: false
           tags: ${{ steps.image.outputs.name }}

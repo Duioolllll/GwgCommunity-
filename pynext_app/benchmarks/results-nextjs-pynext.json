@@ -1,0 +1,2202 @@
+{
+  "timestamp_utc": "2026-11-15T12:58:13.336261+00:00",
+  "method": {
+    "workload": "migrated application, not an identical-render microbenchmark",
+    "python": "3.14.4",
+    "machine": "aarch64",
+    "cpus": 4,
+    "seconds": 3,
+    "repeats": 3,
+    "concurrency": [
+      1,
+      8,
+      32
+    ],
+    "app_workers_each": 1,
+    "database": "same disposable PostgreSQL 17 container, separate schemas/databases",
+    "fixture": "same IDs and values: 1000 market posts, 20 public clubs and recruitments, 1 user",
+    "http": "HTTP/1.1 keep-alive, no TLS/proxy, identity encoding, full response bodies",
+    "resources": "application process tree only; excludes shared DB and load generator",
+    "limitations": "HTML templates and JSON envelope/serialization differ. API records checked before load. Closed-loop localhost load; not maximum production capacity.",
+    "nextjs_version": "15.5.28",
+    "pynext_version": "0.1.2 (ASGI/Uvicorn)"
+  },
+  "parity": {
+    "/api/market": {
+      "matching_listing_records": 20,
+      "computed_field_differences": {}
+    },
+    "/api/market?category=%EC%B1%85%C2%B7%EA%B5%90%EC%9E%AC&minPrice=1000&maxPrice=90000&page=2": {
+      "matching_listing_records": 20,
+      "computed_field_differences": {}
+    },
+    "/api/clubs": {
+      "matching_listing_records": 20,
+      "computed_field_differences": {
+        "recruiting": 20
+      }
+    }
+  },
+  "runs": [
+    {
+      "requests": 783,
+      "elapsed_seconds": 3.002,
+      "requests_per_second": 260.84,
+      "p50_ms": 3.74,
+      "p95_ms": 4.91,
+      "p99_ms": 7.04,
+      "errors": 0,
+      "statuses": {
+        "200": 783
+      },
+      "cpu_percent_one_core": 110.26,
+      "peak_rss_mib": 283.45,
+      "bytes_min": 21831,
+      "bytes_max": 21831,
+      "engine": "nextjs",
+      "path": "/",
+      "concurrency": 1,
+      "repeat": 1
+    },
+    {
+      "requests": 590,
+      "elapsed_seconds": 3.001,
+      "requests_per_second": 196.57,
+      "p50_ms": 4.45,
+      "p95_ms": 8.68,
+      "p99_ms": 11.15,
+      "errors": 0,
+      "statuses": {
+        "200": 590
+      },
+      "cpu_percent_one_core": 90.62,
+      "peak_rss_mib": 79.83,
+      "bytes_min": 4575,
+      "bytes_max": 4575,
+      "engine": "pynext",
+      "path": "/",
+      "concurrency": 1,
+      "repeat": 1
+    },
+    {
+      "requests": 652,
+      "elapsed_seconds": 3.003,
+      "requests_per_second": 217.12,
+      "p50_ms": 4.25,
+      "p95_ms": 5.07,
+      "p99_ms": 6.23,
+      "errors": 0,
+      "statuses": {
+        "200": 652
+      },
+      "cpu_percent_one_core": 95.57,
+      "peak_rss_mib": 83.73,
+      "bytes_min": 4575,
+      "bytes_max": 4575,
+      "engine": "pynext",
+      "path": "/",
+      "concurrency": 1,
+      "repeat": 2
+    },
+    {
+      "requests": 847,
+      "elapsed_seconds": 3.002,
+      "requests_per_second": 282.13,
+      "p50_ms": 3.26,
+      "p95_ms": 4.74,
+      "p99_ms": 8.66,
+      "errors": 0,
+      "statuses": {
+        "200": 847
+      },
+      "cpu_percent_one_core": 104.92,
+      "peak_rss_mib": 285.64,
+      "bytes_min": 21831,
+      "bytes_max": 21831,
+      "engine": "nextjs",
+      "path": "/",
+      "concurrency": 1,
+      "repeat": 2
+    },
+    {
+      "requests": 893,
+      "elapsed_seconds": 3.002,
+      "requests_per_second": 297.47,
+      "p50_ms": 3.16,
+      "p95_ms": 4.42,
+      "p99_ms": 6.66,
+      "errors": 0,
+      "statuses": {
+        "200": 893
+      },
+      "cpu_percent_one_core": 97.94,
+      "peak_rss_mib": 291.98,
+      "bytes_min": 21831,
+      "bytes_max": 21831,
+      "engine": "nextjs",
+      "path": "/",
+      "concurrency": 1,
+      "repeat": 3
+    },
+    {
+      "requests": 684,
+      "elapsed_seconds": 3.001,
+      "requests_per_second": 227.92,
+      "p50_ms": 4.24,
+      "p95_ms": 5.23,
+      "p99_ms": 6.58,
+      "errors": 0,
+      "statuses": {
+        "200": 684
+      },
+      "cpu_percent_one_core": 94.97,
+      "peak_rss_mib": 83.78,
+      "bytes_min": 4575,
+      "bytes_max": 4575,
+      "engine": "pynext",
+      "path": "/",
+      "concurrency": 1,
+      "repeat": 3
+    },
+    {
+      "requests": 1058,
+      "elapsed_seconds": 3.021,
+      "requests_per_second": 350.22,
+      "p50_ms": 19.76,
+      "p95_ms": 39.99,
+      "p99_ms": 45.5,
+      "errors": 0,
+      "statuses": {
+        "200": 1058
+      },
+      "cpu_percent_one_core": 105.93,
+      "peak_rss_mib": 336.08,
+      "bytes_min": 21831,
+      "bytes_max": 21831,
+      "engine": "nextjs",
+      "path": "/",
+      "concurrency": 8,
+      "repeat": 1
+    },
+    {
+      "requests": 765,
+      "elapsed_seconds": 3.021,
+      "requests_per_second": 253.19,
+      "p50_ms": 29.96,
+      "p95_ms": 35.77,
+      "p99_ms": 118.23,
+      "errors": 0,
+      "statuses": {
+        "200": 765
+      },
+      "cpu_percent_one_core": 101.61,
+      "peak_rss_mib": 83.5,
+      "bytes_min": 4575,
+      "bytes_max": 4575,
+      "engine": "pynext",
+      "path": "/",
+      "concurrency": 8,
+      "repeat": 1
+    },
+    {
+      "requests": 779,
+      "elapsed_seconds": 3.028,
+      "requests_per_second": 257.3,
+      "p50_ms": 30.4,
+      "p95_ms": 36.92,
+      "p99_ms": 46.56,
+      "errors": 0,
+      "statuses": {
+        "200": 779
+      },
+      "cpu_percent_one_core": 101.4,
+      "peak_rss_mib": 83.5,
+      "bytes_min": 4575,
+      "bytes_max": 4575,
+      "engine": "pynext",
+      "path": "/",
+      "concurrency": 8,
+      "repeat": 2
+    },
+    {
+      "requests": 1077,
+      "elapsed_seconds": 3.045,
+      "requests_per_second": 353.66,
+      "p50_ms": 18.92,
+      "p95_ms": 38.69,
+      "p99_ms": 48.61,
+      "errors": 0,
+      "statuses": {
+        "200": 1077
+      },
+      "cpu_percent_one_core": 112.96,
+      "peak_rss_mib": 348.95,
+      "bytes_min": 21831,
+      "bytes_max": 21831,
+      "engine": "nextjs",
+      "path": "/",
+      "concurrency": 8,
+      "repeat": 2
+    },
+    {
+      "requests": 1127,
+      "elapsed_seconds": 3.026,
+      "requests_per_second": 372.39,
+      "p50_ms": 18.48,
+      "p95_ms": 37.24,
+      "p99_ms": 40.6,
+      "errors": 0,
+      "statuses": {
+        "200": 1127
+      },
+      "cpu_percent_one_core": 109.7,
+      "peak_rss_mib": 349.96,
+      "bytes_min": 21831,
+      "bytes_max": 21831,
+      "engine": "nextjs",
+      "path": "/",
+      "concurrency": 8,
+      "repeat": 3
+    },
+    {
+      "requests": 735,
+      "elapsed_seconds": 3.021,
+      "requests_per_second": 243.31,
+      "p50_ms": 31.36,
+      "p95_ms": 42.31,
+      "p99_ms": 53.64,
+      "errors": 0,
+      "statuses": {
+        "200": 735
+      },
+      "cpu_percent_one_core": 100.3,
+      "peak_rss_mib": 83.22,
+      "bytes_min": 4575,
+      "bytes_max": 4575,
+      "engine": "pynext",
+      "path": "/",
+      "concurrency": 8,
+      "repeat": 3
+    },
+    {
+      "requests": 1141,
+      "elapsed_seconds": 3.088,
+      "requests_per_second": 369.51,
+      "p50_ms": 79.7,
+      "p95_ms": 102.65,
+      "p99_ms": 525.7,
+      "errors": 0,
+      "statuses": {
+        "200": 1141
+      },
+      "cpu_percent_one_core": 104.28,
+      "peak_rss_mib": 372.73,
+      "bytes_min": 21831,
+      "bytes_max": 21831,
+      "engine": "nextjs",
+      "path": "/",
+      "concurrency": 32,
+      "repeat": 1
+    },
+    {
+      "requests": 831,
+      "elapsed_seconds": 3.077,
+      "requests_per_second": 270.04,
+      "p50_ms": 116.61,
+      "p95_ms": 131.19,
+      "p99_ms": 147.13,
+      "errors": 0,
+      "statuses": {
+        "200": 831
+      },
+      "cpu_percent_one_core": 101.39,
+      "peak_rss_mib": 83.11,
+      "bytes_min": 4575,
+      "bytes_max": 4575,
+      "engine": "pynext",
+      "path": "/",
+      "concurrency": 32,
+      "repeat": 1
+    },
+    {
+      "requests": 831,
+      "elapsed_seconds": 3.091,
+      "requests_per_second": 268.82,
+      "p50_ms": 116.91,
+      "p95_ms": 137.95,
+      "p99_ms": 147.66,
+      "errors": 0,
+      "statuses": {
+        "200": 831
+      },
+      "cpu_percent_one_core": 101.25,
+      "peak_rss_mib": 83.11,
+      "bytes_min": 4575,
+      "bytes_max": 4575,
+      "engine": "pynext",
+      "path": "/",
+      "concurrency": 32,
+      "repeat": 2
+    },
+    {
+      "requests": 1162,
+      "elapsed_seconds": 3.086,
+      "requests_per_second": 376.51,
+      "p50_ms": 79.05,
+      "p95_ms": 97.74,
+      "p99_ms": 506.82,
+      "errors": 0,
+      "statuses": {
+        "200": 1162
+      },
+      "cpu_percent_one_core": 104.98,
+      "peak_rss_mib": 385.83,
+      "bytes_min": 21831,
+      "bytes_max": 21831,
+      "engine": "nextjs",
+      "path": "/",
+      "concurrency": 32,
+      "repeat": 2
+    },
+    {
+      "requests": 1169,
+      "elapsed_seconds": 3.093,
+      "requests_per_second": 378.0,
+      "p50_ms": 78.86,
+      "p95_ms": 96.33,
+      "p99_ms": 533.32,
+      "errors": 0,
+      "statuses": {
+        "200": 1169
+      },
+      "cpu_percent_one_core": 105.09,
+      "peak_rss_mib": 398.75,
+      "bytes_min": 21831,
+      "bytes_max": 21831,
+      "engine": "nextjs",
+      "path": "/",
+      "concurrency": 32,
+      "repeat": 3
+    },
+    {
+      "requests": 818,
+      "elapsed_seconds": 3.111,
+      "requests_per_second": 262.91,
+      "p50_ms": 116.92,
+      "p95_ms": 166.09,
+      "p99_ms": 191.51,
+      "errors": 0,
+      "statuses": {
+        "200": 818
+      },
+      "cpu_percent_one_core": 100.28,
+      "peak_rss_mib": 83.11,
+      "bytes_min": 4575,
+      "bytes_max": 4575,
+      "engine": "pynext",
+      "path": "/",
+      "concurrency": 32,
+      "repeat": 3
+    },
+    {
+      "requests": 93,
+      "elapsed_seconds": 3.019,
+      "requests_per_second": 30.81,
+      "p50_ms": 30.06,
+      "p95_ms": 44.79,
+      "p99_ms": 85.43,
+      "errors": 0,
+      "statuses": {
+        "200": 93
+      },
+      "cpu_percent_one_core": 139.12,
+      "peak_rss_mib": 270.7,
+      "bytes_min": 32830,
+      "bytes_max": 32830,
+      "engine": "nextjs",
+      "path": "/market",
+      "concurrency": 1,
+      "repeat": 1
+    },
+    {
+      "requests": 59,
+      "elapsed_seconds": 3.007,
+      "requests_per_second": 19.62,
+      "p50_ms": 49.98,
+      "p95_ms": 57.71,
+      "p99_ms": 78.29,
+      "errors": 0,
+      "statuses": {
+        "200": 59
+      },
+      "cpu_percent_one_core": 63.84,
+      "peak_rss_mib": 83.29,
+      "bytes_min": 5718,
+      "bytes_max": 5718,
+      "engine": "pynext",
+      "path": "/market",
+      "concurrency": 1,
+      "repeat": 1
+    },
+    {
+      "requests": 60,
+      "elapsed_seconds": 3.047,
+      "requests_per_second": 19.69,
+      "p50_ms": 49.65,
+      "p95_ms": 53.4,
+      "p99_ms": 89.79,
+      "errors": 0,
+      "statuses": {
+        "200": 60
+      },
+      "cpu_percent_one_core": 62.69,
+      "peak_rss_mib": 86.65,
+      "bytes_min": 5718,
+      "bytes_max": 5718,
+      "engine": "pynext",
+      "path": "/market",
+      "concurrency": 1,
+      "repeat": 2
+    },
+    {
+      "requests": 87,
+      "elapsed_seconds": 3.033,
+      "requests_per_second": 28.68,
+      "p50_ms": 32.74,
+      "p95_ms": 46.42,
+      "p99_ms": 106.42,
+      "errors": 0,
+      "statuses": {
+        "200": 87
+      },
+      "cpu_percent_one_core": 121.99,
+      "peak_rss_mib": 261.88,
+      "bytes_min": 32830,
+      "bytes_max": 32830,
+      "engine": "nextjs",
+      "path": "/market",
+      "concurrency": 1,
+      "repeat": 2
+    },
+    {
+      "requests": 98,
+      "elapsed_seconds": 3.008,
+      "requests_per_second": 32.58,
+      "p50_ms": 29.56,
+      "p95_ms": 35.66,
+      "p99_ms": 56.53,
+      "errors": 0,
+      "statuses": {
+        "200": 98
+      },
+      "cpu_percent_one_core": 124.34,
+      "peak_rss_mib": 299.37,
+      "bytes_min": 32830,
+      "bytes_max": 32830,
+      "engine": "nextjs",
+      "path": "/market",
+      "concurrency": 1,
+      "repeat": 3
+    },
+    {
+      "requests": 56,
+      "elapsed_seconds": 3.026,
+      "requests_per_second": 18.51,
+      "p50_ms": 49.93,
+      "p95_ms": 63.1,
+      "p99_ms": 218.99,
+      "errors": 0,
+      "statuses": {
+        "200": 56
+      },
+      "cpu_percent_one_core": 65.1,
+      "peak_rss_mib": 91.04,
+      "bytes_min": 5718,
+      "bytes_max": 5718,
+      "engine": "pynext",
+      "path": "/market",
+      "concurrency": 1,
+      "repeat": 3
+    },
+    {
+      "requests": 114,
+      "elapsed_seconds": 3.096,
+      "requests_per_second": 36.82,
+      "p50_ms": 209.24,
+      "p95_ms": 281.87,
+      "p99_ms": 461.73,
+      "errors": 0,
+      "statuses": {
+        "200": 114
+      },
+      "cpu_percent_one_core": 128.54,
+      "peak_rss_mib": 309.18,
+      "bytes_min": 32830,
+      "bytes_max": 32830,
+      "engine": "nextjs",
+      "path": "/market",
+      "concurrency": 8,
+      "repeat": 1
+    },
+    {
+      "requests": 66,
+      "elapsed_seconds": 3.34,
+      "requests_per_second": 19.76,
+      "p50_ms": 391.41,
+      "p95_ms": 457.87,
+      "p99_ms": 473.25,
+      "errors": 0,
+      "statuses": {
+        "200": 66
+      },
+      "cpu_percent_one_core": 65.57,
+      "peak_rss_mib": 91.14,
+      "bytes_min": 5718,
+      "bytes_max": 5718,
+      "engine": "pynext",
+      "path": "/market",
+      "concurrency": 8,
+      "repeat": 1
+    },
+    {
+      "requests": 66,
+      "elapsed_seconds": 3.341,
+      "requests_per_second": 19.75,
+      "p50_ms": 390.61,
+      "p95_ms": 487.46,
+      "p99_ms": 506.58,
+      "errors": 0,
+      "statuses": {
+        "200": 66
+      },
+      "cpu_percent_one_core": 67.64,
+      "peak_rss_mib": 91.14,
+      "bytes_min": 5718,
+      "bytes_max": 5718,
+      "engine": "pynext",
+      "path": "/market",
+      "concurrency": 8,
+      "repeat": 2
+    },
+    {
+      "requests": 116,
+      "elapsed_seconds": 3.115,
+      "requests_per_second": 37.24,
+      "p50_ms": 206.42,
+      "p95_ms": 255.59,
+      "p99_ms": 309.53,
+      "errors": 0,
+      "statuses": {
+        "200": 116
+      },
+      "cpu_percent_one_core": 121.68,
+      "peak_rss_mib": 363.57,
+      "bytes_min": 32830,
+      "bytes_max": 32830,
+      "engine": "nextjs",
+      "path": "/market",
+      "concurrency": 8,
+      "repeat": 2
+    },
+    {
+      "requests": 123,
+      "elapsed_seconds": 3.094,
+      "requests_per_second": 39.75,
+      "p50_ms": 192.65,
+      "p95_ms": 256.19,
+      "p99_ms": 306.64,
+      "errors": 0,
+      "statuses": {
+        "200": 123
+      },
+      "cpu_percent_one_core": 128.31,
+      "peak_rss_mib": 373.19,
+      "bytes_min": 32830,
+      "bytes_max": 32830,
+      "engine": "nextjs",
+      "path": "/market",
+      "concurrency": 8,
+      "repeat": 3
+    },
+    {
+      "requests": 66,
+      "elapsed_seconds": 3.344,
+      "requests_per_second": 19.74,
+      "p50_ms": 394.2,
+      "p95_ms": 419.35,
+      "p99_ms": 454.76,
+      "errors": 0,
+      "statuses": {
+        "200": 66
+      },
+      "cpu_percent_one_core": 67.58,
+      "peak_rss_mib": 91.14,
+      "bytes_min": 5718,
+      "bytes_max": 5718,
+      "engine": "pynext",
+      "path": "/market",
+      "concurrency": 8,
+      "repeat": 3
+    },
+    {
+      "requests": 145,
+      "elapsed_seconds": 3.434,
+      "requests_per_second": 42.22,
+      "p50_ms": 704.25,
+      "p95_ms": 1329.25,
+      "p99_ms": 1781.77,
+      "errors": 0,
+      "statuses": {
+        "200": 145
+      },
+      "cpu_percent_one_core": 118.22,
+      "peak_rss_mib": 389.64,
+      "bytes_min": 32830,
+      "bytes_max": 32830,
+      "engine": "nextjs",
+      "path": "/market",
+      "concurrency": 32,
+      "repeat": 1
+    },
+    {
+      "requests": 89,
+      "elapsed_seconds": 4.533,
+      "requests_per_second": 19.63,
+      "p50_ms": 1568.38,
+      "p95_ms": 1706.68,
+      "p99_ms": 1732.49,
+      "errors": 0,
+      "statuses": {
+        "200": 89
+      },
+      "cpu_percent_one_core": 66.18,
+      "peak_rss_mib": 91.14,
+      "bytes_min": 5718,
+      "bytes_max": 5718,
+      "engine": "pynext",
+      "path": "/market",
+      "concurrency": 32,
+      "repeat": 1
+    },
+    {
+      "requests": 91,
+      "elapsed_seconds": 4.578,
+      "requests_per_second": 19.88,
+      "p50_ms": 1555.95,
+      "p95_ms": 1621.75,
+      "p99_ms": 1644.11,
+      "errors": 0,
+      "statuses": {
+        "200": 91
+      },
+      "cpu_percent_one_core": 66.4,
+      "peak_rss_mib": 91.14,
+      "bytes_min": 5718,
+      "bytes_max": 5718,
+      "engine": "pynext",
+      "path": "/market",
+      "concurrency": 32,
+      "repeat": 2
+    },
+    {
+      "requests": 115,
+      "elapsed_seconds": 3.511,
+      "requests_per_second": 32.76,
+      "p50_ms": 796.1,
+      "p95_ms": 2263.24,
+      "p99_ms": 2643.93,
+      "errors": 0,
+      "statuses": {
+        "200": 115
+      },
+      "cpu_percent_one_core": 136.72,
+      "peak_rss_mib": 329.57,
+      "bytes_min": 32830,
+      "bytes_max": 32830,
+      "engine": "nextjs",
+      "path": "/market",
+      "concurrency": 32,
+      "repeat": 2
+    },
+    {
+      "requests": 130,
+      "elapsed_seconds": 3.48,
+      "requests_per_second": 37.36,
+      "p50_ms": 726.22,
+      "p95_ms": 2033.93,
+      "p99_ms": 2439.9,
+      "errors": 0,
+      "statuses": {
+        "200": 130
+      },
+      "cpu_percent_one_core": 123.29,
+      "peak_rss_mib": 383.3,
+      "bytes_min": 32830,
+      "bytes_max": 32830,
+      "engine": "nextjs",
+      "path": "/market",
+      "concurrency": 32,
+      "repeat": 3
+    },
+    {
+      "requests": 92,
+      "elapsed_seconds": 4.712,
+      "requests_per_second": 19.52,
+      "p50_ms": 1558.41,
+      "p95_ms": 1744.98,
+      "p99_ms": 1753.51,
+      "errors": 0,
+      "statuses": {
+        "200": 92
+      },
+      "cpu_percent_one_core": 67.69,
+      "peak_rss_mib": 93.96,
+      "bytes_min": 5718,
+      "bytes_max": 5718,
+      "engine": "pynext",
+      "path": "/market",
+      "concurrency": 32,
+      "repeat": 3
+    },
+    {
+      "requests": 133,
+      "elapsed_seconds": 3.021,
+      "requests_per_second": 44.03,
+      "p50_ms": 22.02,
+      "p95_ms": 25.6,
+      "p99_ms": 32.83,
+      "errors": 0,
+      "statuses": {
+        "200": 133
+      },
+      "cpu_percent_one_core": 115.53,
+      "peak_rss_mib": 383.99,
+      "bytes_min": 33506,
+      "bytes_max": 33506,
+      "engine": "nextjs",
+      "path": "/clubs",
+      "concurrency": 1,
+      "repeat": 1
+    },
+    {
+      "requests": 77,
+      "elapsed_seconds": 3.028,
+      "requests_per_second": 25.43,
+      "p50_ms": 38.9,
+      "p95_ms": 42.46,
+      "p99_ms": 45.08,
+      "errors": 0,
+      "statuses": {
+        "200": 77
+      },
+      "cpu_percent_one_core": 69.69,
+      "peak_rss_mib": 94.13,
+      "bytes_min": 4429,
+      "bytes_max": 4429,
+      "engine": "pynext",
+      "path": "/clubs",
+      "concurrency": 1,
+      "repeat": 1
+    },
+    {
+      "requests": 77,
+      "elapsed_seconds": 3.024,
+      "requests_per_second": 25.47,
+      "p50_ms": 38.96,
+      "p95_ms": 41.24,
+      "p99_ms": 44.17,
+      "errors": 0,
+      "statuses": {
+        "200": 77
+      },
+      "cpu_percent_one_core": 69.78,
+      "peak_rss_mib": 94.16,
+      "bytes_min": 4429,
+      "bytes_max": 4429,
+      "engine": "pynext",
+      "path": "/clubs",
+      "concurrency": 1,
+      "repeat": 2
+    },
+    {
+      "requests": 131,
+      "elapsed_seconds": 3.01,
+      "requests_per_second": 43.52,
+      "p50_ms": 21.67,
+      "p95_ms": 28.77,
+      "p99_ms": 42.79,
+      "errors": 0,
+      "statuses": {
+        "200": 131
+      },
+      "cpu_percent_one_core": 110.96,
+      "peak_rss_mib": 389.17,
+      "bytes_min": 33506,
+      "bytes_max": 33506,
+      "engine": "nextjs",
+      "path": "/clubs",
+      "concurrency": 1,
+      "repeat": 2
+    },
+    {
+      "requests": 138,
+      "elapsed_seconds": 3.016,
+      "requests_per_second": 45.76,
+      "p50_ms": 21.13,
+      "p95_ms": 24.74,
+      "p99_ms": 35.67,
+      "errors": 0,
+      "statuses": {
+        "200": 138
+      },
+      "cpu_percent_one_core": 107.43,
+      "peak_rss_mib": 401.87,
+      "bytes_min": 33506,
+      "bytes_max": 33506,
+      "engine": "nextjs",
+      "path": "/clubs",
+      "concurrency": 1,
+      "repeat": 3
+    },
+    {
+      "requests": 74,
+      "elapsed_seconds": 3.007,
+      "requests_per_second": 24.61,
+      "p50_ms": 38.86,
+      "p95_ms": 41.12,
+      "p99_ms": 152.44,
+      "errors": 0,
+      "statuses": {
+        "200": 74
+      },
+      "cpu_percent_one_core": 71.17,
+      "peak_rss_mib": 94.2,
+      "bytes_min": 4429,
+      "bytes_max": 4429,
+      "engine": "pynext",
+      "path": "/clubs",
+      "concurrency": 1,
+      "repeat": 3
+    },
+    {
+      "requests": 141,
+      "elapsed_seconds": 3.093,
+      "requests_per_second": 45.58,
+      "p50_ms": 166.85,
+      "p95_ms": 214.72,
+      "p99_ms": 490.66,
+      "errors": 0,
+      "statuses": {
+        "200": 141
+      },
+      "cpu_percent_one_core": 116.39,
+      "peak_rss_mib": 427.5,
+      "bytes_min": 33506,
+      "bytes_max": 33506,
+      "engine": "nextjs",
+      "path": "/clubs",
+      "concurrency": 8,
+      "repeat": 1
+    },
+    {
+      "requests": 86,
+      "elapsed_seconds": 3.271,
+      "requests_per_second": 26.29,
+      "p50_ms": 303.4,
+      "p95_ms": 309.19,
+      "p99_ms": 314.3,
+      "errors": 0,
+      "statuses": {
+        "200": 86
+      },
+      "cpu_percent_one_core": 73.67,
+      "peak_rss_mib": 94.19,
+      "bytes_min": 4429,
+      "bytes_max": 4429,
+      "engine": "pynext",
+      "path": "/clubs",
+      "concurrency": 8,
+      "repeat": 1
+    },
+    {
+      "requests": 84,
+      "elapsed_seconds": 3.267,
+      "requests_per_second": 25.71,
+      "p50_ms": 303.8,
+      "p95_ms": 361.6,
+      "p99_ms": 364.8,
+      "errors": 0,
+      "statuses": {
+        "200": 84
+      },
+      "cpu_percent_one_core": 73.77,
+      "peak_rss_mib": 94.16,
+      "bytes_min": 4429,
+      "bytes_max": 4429,
+      "engine": "pynext",
+      "path": "/clubs",
+      "concurrency": 8,
+      "repeat": 2
+    },
+    {
+      "requests": 139,
+      "elapsed_seconds": 3.099,
+      "requests_per_second": 44.85,
+      "p50_ms": 169.33,
+      "p95_ms": 231.94,
+      "p99_ms": 261.92,
+      "errors": 0,
+      "statuses": {
+        "200": 139
+      },
+      "cpu_percent_one_core": 129.39,
+      "peak_rss_mib": 439.2,
+      "bytes_min": 33506,
+      "bytes_max": 33506,
+      "engine": "nextjs",
+      "path": "/clubs",
+      "concurrency": 8,
+      "repeat": 2
+    },
+    {
+      "requests": 148,
+      "elapsed_seconds": 3.091,
+      "requests_per_second": 47.88,
+      "p50_ms": 161.39,
+      "p95_ms": 186.8,
+      "p99_ms": 242.88,
+      "errors": 0,
+      "statuses": {
+        "200": 148
+      },
+      "cpu_percent_one_core": 112.58,
+      "peak_rss_mib": 439.23,
+      "bytes_min": 33506,
+      "bytes_max": 33506,
+      "engine": "nextjs",
+      "path": "/clubs",
+      "concurrency": 8,
+      "repeat": 3
+    },
+    {
+      "requests": 82,
+      "elapsed_seconds": 3.261,
+      "requests_per_second": 25.14,
+      "p50_ms": 307.49,
+      "p95_ms": 374.39,
+      "p99_ms": 402.55,
+      "errors": 0,
+      "statuses": {
+        "200": 82
+      },
+      "cpu_percent_one_core": 73.28,
+      "peak_rss_mib": 94.16,
+      "bytes_min": 4429,
+      "bytes_max": 4429,
+      "engine": "pynext",
+      "path": "/clubs",
+      "concurrency": 8,
+      "repeat": 3
+    },
+    {
+      "requests": 160,
+      "elapsed_seconds": 3.397,
+      "requests_per_second": 47.1,
+      "p50_ms": 605.82,
+      "p95_ms": 1589.9,
+      "p99_ms": 2430.08,
+      "errors": 0,
+      "statuses": {
+        "200": 160
+      },
+      "cpu_percent_one_core": 123.64,
+      "peak_rss_mib": 447.85,
+      "bytes_min": 33506,
+      "bytes_max": 33506,
+      "engine": "nextjs",
+      "path": "/clubs",
+      "concurrency": 32,
+      "repeat": 1
+    },
+    {
+      "requests": 106,
+      "elapsed_seconds": 4.164,
+      "requests_per_second": 25.46,
+      "p50_ms": 1217.77,
+      "p95_ms": 1278.04,
+      "p99_ms": 1315.02,
+      "errors": 0,
+      "statuses": {
+        "200": 106
+      },
+      "cpu_percent_one_core": 73.01,
+      "peak_rss_mib": 94.16,
+      "bytes_min": 4429,
+      "bytes_max": 4429,
+      "engine": "pynext",
+      "path": "/clubs",
+      "concurrency": 32,
+      "repeat": 1
+    },
+    {
+      "requests": 109,
+      "elapsed_seconds": 4.185,
+      "requests_per_second": 26.04,
+      "p50_ms": 1206.11,
+      "p95_ms": 1261.9,
+      "p99_ms": 1265.11,
+      "errors": 0,
+      "statuses": {
+        "200": 109
+      },
+      "cpu_percent_one_core": 73.59,
+      "peak_rss_mib": 94.16,
+      "bytes_min": 4429,
+      "bytes_max": 4429,
+      "engine": "pynext",
+      "path": "/clubs",
+      "concurrency": 32,
+      "repeat": 2
+    },
+    {
+      "requests": 160,
+      "elapsed_seconds": 3.315,
+      "requests_per_second": 48.26,
+      "p50_ms": 562.5,
+      "p95_ms": 1772.28,
+      "p99_ms": 2590.66,
+      "errors": 0,
+      "statuses": {
+        "200": 160
+      },
+      "cpu_percent_one_core": 119.14,
+      "peak_rss_mib": 463.12,
+      "bytes_min": 33506,
+      "bytes_max": 33506,
+      "engine": "nextjs",
+      "path": "/clubs",
+      "concurrency": 32,
+      "repeat": 2
+    },
+    {
+      "requests": 166,
+      "elapsed_seconds": 3.389,
+      "requests_per_second": 48.98,
+      "p50_ms": 536.72,
+      "p95_ms": 1647.61,
+      "p99_ms": 2593.43,
+      "errors": 0,
+      "statuses": {
+        "200": 166
+      },
+      "cpu_percent_one_core": 113.29,
+      "peak_rss_mib": 465.29,
+      "bytes_min": 33506,
+      "bytes_max": 33506,
+      "engine": "nextjs",
+      "path": "/clubs",
+      "concurrency": 32,
+      "repeat": 3
+    },
+    {
+      "requests": 108,
+      "elapsed_seconds": 4.179,
+      "requests_per_second": 25.85,
+      "p50_ms": 1224.22,
+      "p95_ms": 1235.63,
+      "p99_ms": 1237.11,
+      "errors": 0,
+      "statuses": {
+        "200": 108
+      },
+      "cpu_percent_one_core": 73.71,
+      "peak_rss_mib": 94.16,
+      "bytes_min": 4429,
+      "bytes_max": 4429,
+      "engine": "pynext",
+      "path": "/clubs",
+      "concurrency": 32,
+      "repeat": 3
+    },
+    {
+      "requests": 303,
+      "elapsed_seconds": 3.008,
+      "requests_per_second": 100.72,
+      "p50_ms": 9.32,
+      "p95_ms": 14.02,
+      "p99_ms": 17.42,
+      "errors": 0,
+      "statuses": {
+        "200": 303
+      },
+      "cpu_percent_one_core": 103.72,
+      "peak_rss_mib": 472.34,
+      "bytes_min": 3501,
+      "bytes_max": 3501,
+      "engine": "nextjs",
+      "path": "/api/market",
+      "concurrency": 1,
+      "repeat": 1
+    },
+    {
+      "requests": 95,
+      "elapsed_seconds": 3.006,
+      "requests_per_second": 31.6,
+      "p50_ms": 31.15,
+      "p95_ms": 34.81,
+      "p99_ms": 45.33,
+      "errors": 0,
+      "statuses": {
+        "200": 95
+      },
+      "cpu_percent_one_core": 64.53,
+      "peak_rss_mib": 94.16,
+      "bytes_min": 4237,
+      "bytes_max": 4237,
+      "engine": "pynext",
+      "path": "/api/market",
+      "concurrency": 1,
+      "repeat": 1
+    },
+    {
+      "requests": 97,
+      "elapsed_seconds": 3.024,
+      "requests_per_second": 32.08,
+      "p50_ms": 30.99,
+      "p95_ms": 32.47,
+      "p99_ms": 34.28,
+      "errors": 0,
+      "statuses": {
+        "200": 97
+      },
+      "cpu_percent_one_core": 64.49,
+      "peak_rss_mib": 94.16,
+      "bytes_min": 4237,
+      "bytes_max": 4237,
+      "engine": "pynext",
+      "path": "/api/market",
+      "concurrency": 1,
+      "repeat": 2
+    },
+    {
+      "requests": 317,
+      "elapsed_seconds": 3.008,
+      "requests_per_second": 105.37,
+      "p50_ms": 8.8,
+      "p95_ms": 14.11,
+      "p99_ms": 19.69,
+      "errors": 0,
+      "statuses": {
+        "200": 317
+      },
+      "cpu_percent_one_core": 92.07,
+      "peak_rss_mib": 481.62,
+      "bytes_min": 3501,
+      "bytes_max": 3501,
+      "engine": "nextjs",
+      "path": "/api/market",
+      "concurrency": 1,
+      "repeat": 2
+    },
+    {
+      "requests": 357,
+      "elapsed_seconds": 3.008,
+      "requests_per_second": 118.7,
+      "p50_ms": 8.16,
+      "p95_ms": 9.86,
+      "p99_ms": 11.88,
+      "errors": 0,
+      "statuses": {
+        "200": 357
+      },
+      "cpu_percent_one_core": 84.45,
+      "peak_rss_mib": 481.85,
+      "bytes_min": 3501,
+      "bytes_max": 3501,
+      "engine": "nextjs",
+      "path": "/api/market",
+      "concurrency": 1,
+      "repeat": 3
+    },
+    {
+      "requests": 95,
+      "elapsed_seconds": 3.004,
+      "requests_per_second": 31.62,
+      "p50_ms": 31.07,
+      "p95_ms": 35.65,
+      "p99_ms": 39.01,
+      "errors": 0,
+      "statuses": {
+        "200": 95
+      },
+      "cpu_percent_one_core": 64.24,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4237,
+      "bytes_max": 4237,
+      "engine": "pynext",
+      "path": "/api/market",
+      "concurrency": 1,
+      "repeat": 3
+    },
+    {
+      "requests": 484,
+      "elapsed_seconds": 3.038,
+      "requests_per_second": 159.34,
+      "p50_ms": 44.14,
+      "p95_ms": 73.21,
+      "p99_ms": 83.09,
+      "errors": 0,
+      "statuses": {
+        "200": 484
+      },
+      "cpu_percent_one_core": 106.67,
+      "peak_rss_mib": 482.04,
+      "bytes_min": 3501,
+      "bytes_max": 3501,
+      "engine": "nextjs",
+      "path": "/api/market",
+      "concurrency": 8,
+      "repeat": 1
+    },
+    {
+      "requests": 105,
+      "elapsed_seconds": 3.256,
+      "requests_per_second": 32.25,
+      "p50_ms": 242.39,
+      "p95_ms": 314.36,
+      "p99_ms": 315.68,
+      "errors": 0,
+      "statuses": {
+        "200": 105
+      },
+      "cpu_percent_one_core": 67.58,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4237,
+      "bytes_max": 4237,
+      "engine": "pynext",
+      "path": "/api/market",
+      "concurrency": 8,
+      "repeat": 1
+    },
+    {
+      "requests": 105,
+      "elapsed_seconds": 3.214,
+      "requests_per_second": 32.67,
+      "p50_ms": 242.75,
+      "p95_ms": 260.2,
+      "p99_ms": 262.97,
+      "errors": 0,
+      "statuses": {
+        "200": 105
+      },
+      "cpu_percent_one_core": 68.44,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4237,
+      "bytes_max": 4237,
+      "engine": "pynext",
+      "path": "/api/market",
+      "concurrency": 8,
+      "repeat": 2
+    },
+    {
+      "requests": 379,
+      "elapsed_seconds": 3.045,
+      "requests_per_second": 124.46,
+      "p50_ms": 56.79,
+      "p95_ms": 94.38,
+      "p99_ms": 137.41,
+      "errors": 0,
+      "statuses": {
+        "200": 379
+      },
+      "cpu_percent_one_core": 125.44,
+      "peak_rss_mib": 316.32,
+      "bytes_min": 3501,
+      "bytes_max": 3501,
+      "engine": "nextjs",
+      "path": "/api/market",
+      "concurrency": 8,
+      "repeat": 2
+    },
+    {
+      "requests": 397,
+      "elapsed_seconds": 3.041,
+      "requests_per_second": 130.54,
+      "p50_ms": 54.76,
+      "p95_ms": 88.12,
+      "p99_ms": 118.17,
+      "errors": 0,
+      "statuses": {
+        "200": 397
+      },
+      "cpu_percent_one_core": 117.72,
+      "peak_rss_mib": 334.1,
+      "bytes_min": 3501,
+      "bytes_max": 3501,
+      "engine": "nextjs",
+      "path": "/api/market",
+      "concurrency": 8,
+      "repeat": 3
+    },
+    {
+      "requests": 104,
+      "elapsed_seconds": 3.207,
+      "requests_per_second": 32.43,
+      "p50_ms": 243.12,
+      "p95_ms": 271.57,
+      "p99_ms": 281.68,
+      "errors": 0,
+      "statuses": {
+        "200": 104
+      },
+      "cpu_percent_one_core": 68.28,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4237,
+      "bytes_max": 4237,
+      "engine": "pynext",
+      "path": "/api/market",
+      "concurrency": 8,
+      "repeat": 3
+    },
+    {
+      "requests": 430,
+      "elapsed_seconds": 3.121,
+      "requests_per_second": 137.79,
+      "p50_ms": 213.18,
+      "p95_ms": 330.64,
+      "p99_ms": 1066.61,
+      "errors": 0,
+      "statuses": {
+        "200": 430
+      },
+      "cpu_percent_one_core": 121.45,
+      "peak_rss_mib": 341.46,
+      "bytes_min": 3501,
+      "bytes_max": 3501,
+      "engine": "nextjs",
+      "path": "/api/market",
+      "concurrency": 32,
+      "repeat": 1
+    },
+    {
+      "requests": 118,
+      "elapsed_seconds": 3.923,
+      "requests_per_second": 30.08,
+      "p50_ms": 1003.44,
+      "p95_ms": 1280.09,
+      "p99_ms": 1281.35,
+      "errors": 0,
+      "statuses": {
+        "200": 118
+      },
+      "cpu_percent_one_core": 64.49,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4237,
+      "bytes_max": 4237,
+      "engine": "pynext",
+      "path": "/api/market",
+      "concurrency": 32,
+      "repeat": 1
+    },
+    {
+      "requests": 129,
+      "elapsed_seconds": 3.937,
+      "requests_per_second": 32.77,
+      "p50_ms": 971.85,
+      "p95_ms": 991.82,
+      "p99_ms": 993.22,
+      "errors": 0,
+      "statuses": {
+        "200": 129
+      },
+      "cpu_percent_one_core": 68.84,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4237,
+      "bytes_max": 4237,
+      "engine": "pynext",
+      "path": "/api/market",
+      "concurrency": 32,
+      "repeat": 2
+    },
+    {
+      "requests": 425,
+      "elapsed_seconds": 3.101,
+      "requests_per_second": 137.04,
+      "p50_ms": 215.63,
+      "p95_ms": 283.65,
+      "p99_ms": 1115.41,
+      "errors": 0,
+      "statuses": {
+        "200": 425
+      },
+      "cpu_percent_one_core": 106.73,
+      "peak_rss_mib": 391.07,
+      "bytes_min": 3501,
+      "bytes_max": 3501,
+      "engine": "nextjs",
+      "path": "/api/market",
+      "concurrency": 32,
+      "repeat": 2
+    },
+    {
+      "requests": 442,
+      "elapsed_seconds": 3.1,
+      "requests_per_second": 142.56,
+      "p50_ms": 204.5,
+      "p95_ms": 288.14,
+      "p99_ms": 1080.46,
+      "errors": 0,
+      "statuses": {
+        "200": 442
+      },
+      "cpu_percent_one_core": 105.15,
+      "peak_rss_mib": 400.16,
+      "bytes_min": 3501,
+      "bytes_max": 3501,
+      "engine": "nextjs",
+      "path": "/api/market",
+      "concurrency": 32,
+      "repeat": 3
+    },
+    {
+      "requests": 129,
+      "elapsed_seconds": 3.945,
+      "requests_per_second": 32.7,
+      "p50_ms": 970.48,
+      "p95_ms": 982.16,
+      "p99_ms": 984.28,
+      "errors": 0,
+      "statuses": {
+        "200": 129
+      },
+      "cpu_percent_one_core": 68.45,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4237,
+      "bytes_max": 4237,
+      "engine": "pynext",
+      "path": "/api/market",
+      "concurrency": 32,
+      "repeat": 3
+    },
+    {
+      "requests": 360,
+      "elapsed_seconds": 3.004,
+      "requests_per_second": 119.82,
+      "p50_ms": 8.01,
+      "p95_ms": 9.85,
+      "p99_ms": 13.29,
+      "errors": 0,
+      "statuses": {
+        "200": 360
+      },
+      "cpu_percent_one_core": 91.2,
+      "peak_rss_mib": 400.3,
+      "bytes_min": 3562,
+      "bytes_max": 3562,
+      "engine": "nextjs",
+      "path": "/api/clubs",
+      "concurrency": 1,
+      "repeat": 1
+    },
+    {
+      "requests": 91,
+      "elapsed_seconds": 3.012,
+      "requests_per_second": 30.21,
+      "p50_ms": 32.58,
+      "p95_ms": 36.69,
+      "p99_ms": 39.8,
+      "errors": 0,
+      "statuses": {
+        "200": 91
+      },
+      "cpu_percent_one_core": 65.4,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4771,
+      "bytes_max": 4771,
+      "engine": "pynext",
+      "path": "/api/clubs",
+      "concurrency": 1,
+      "repeat": 1
+    },
+    {
+      "requests": 91,
+      "elapsed_seconds": 3.013,
+      "requests_per_second": 30.21,
+      "p50_ms": 32.55,
+      "p95_ms": 36.48,
+      "p99_ms": 39.43,
+      "errors": 0,
+      "statuses": {
+        "200": 91
+      },
+      "cpu_percent_one_core": 65.73,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4771,
+      "bytes_max": 4771,
+      "engine": "pynext",
+      "path": "/api/clubs",
+      "concurrency": 1,
+      "repeat": 2
+    },
+    {
+      "requests": 369,
+      "elapsed_seconds": 3.008,
+      "requests_per_second": 122.68,
+      "p50_ms": 7.79,
+      "p95_ms": 9.26,
+      "p99_ms": 15.29,
+      "errors": 0,
+      "statuses": {
+        "200": 369
+      },
+      "cpu_percent_one_core": 100.4,
+      "peak_rss_mib": 400.3,
+      "bytes_min": 3562,
+      "bytes_max": 3562,
+      "engine": "nextjs",
+      "path": "/api/clubs",
+      "concurrency": 1,
+      "repeat": 2
+    },
+    {
+      "requests": 346,
+      "elapsed_seconds": 3.005,
+      "requests_per_second": 115.14,
+      "p50_ms": 8.12,
+      "p95_ms": 12.0,
+      "p99_ms": 15.9,
+      "errors": 0,
+      "statuses": {
+        "200": 346
+      },
+      "cpu_percent_one_core": 89.51,
+      "peak_rss_mib": 400.3,
+      "bytes_min": 3562,
+      "bytes_max": 3562,
+      "engine": "nextjs",
+      "path": "/api/clubs",
+      "concurrency": 1,
+      "repeat": 3
+    },
+    {
+      "requests": 92,
+      "elapsed_seconds": 3.016,
+      "requests_per_second": 30.5,
+      "p50_ms": 32.55,
+      "p95_ms": 34.51,
+      "p99_ms": 36.78,
+      "errors": 0,
+      "statuses": {
+        "200": 92
+      },
+      "cpu_percent_one_core": 65.65,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4771,
+      "bytes_max": 4771,
+      "engine": "pynext",
+      "path": "/api/clubs",
+      "concurrency": 1,
+      "repeat": 3
+    },
+    {
+      "requests": 448,
+      "elapsed_seconds": 3.044,
+      "requests_per_second": 147.19,
+      "p50_ms": 48.01,
+      "p95_ms": 75.74,
+      "p99_ms": 94.9,
+      "errors": 0,
+      "statuses": {
+        "200": 448
+      },
+      "cpu_percent_one_core": 109.41,
+      "peak_rss_mib": 400.94,
+      "bytes_min": 3562,
+      "bytes_max": 3562,
+      "engine": "nextjs",
+      "path": "/api/clubs",
+      "concurrency": 8,
+      "repeat": 1
+    },
+    {
+      "requests": 101,
+      "elapsed_seconds": 3.233,
+      "requests_per_second": 31.24,
+      "p50_ms": 249.76,
+      "p95_ms": 272.01,
+      "p99_ms": 272.87,
+      "errors": 0,
+      "statuses": {
+        "200": 101
+      },
+      "cpu_percent_one_core": 69.29,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4771,
+      "bytes_max": 4771,
+      "engine": "pynext",
+      "path": "/api/clubs",
+      "concurrency": 8,
+      "repeat": 1
+    },
+    {
+      "requests": 103,
+      "elapsed_seconds": 3.229,
+      "requests_per_second": 31.9,
+      "p50_ms": 249.14,
+      "p95_ms": 260.72,
+      "p99_ms": 263.42,
+      "errors": 0,
+      "statuses": {
+        "200": 103
+      },
+      "cpu_percent_one_core": 70.29,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4771,
+      "bytes_max": 4771,
+      "engine": "pynext",
+      "path": "/api/clubs",
+      "concurrency": 8,
+      "repeat": 2
+    },
+    {
+      "requests": 462,
+      "elapsed_seconds": 3.045,
+      "requests_per_second": 151.74,
+      "p50_ms": 47.19,
+      "p95_ms": 74.59,
+      "p99_ms": 85.74,
+      "errors": 0,
+      "statuses": {
+        "200": 462
+      },
+      "cpu_percent_one_core": 113.64,
+      "peak_rss_mib": 401.08,
+      "bytes_min": 3562,
+      "bytes_max": 3562,
+      "engine": "nextjs",
+      "path": "/api/clubs",
+      "concurrency": 8,
+      "repeat": 2
+    },
+    {
+      "requests": 466,
+      "elapsed_seconds": 3.036,
+      "requests_per_second": 153.47,
+      "p50_ms": 45.3,
+      "p95_ms": 76.83,
+      "p99_ms": 111.44,
+      "errors": 0,
+      "statuses": {
+        "200": 466
+      },
+      "cpu_percent_one_core": 114.61,
+      "peak_rss_mib": 401.09,
+      "bytes_min": 3562,
+      "bytes_max": 3562,
+      "engine": "nextjs",
+      "path": "/api/clubs",
+      "concurrency": 8,
+      "repeat": 3
+    },
+    {
+      "requests": 99,
+      "elapsed_seconds": 3.216,
+      "requests_per_second": 30.78,
+      "p50_ms": 250.42,
+      "p95_ms": 320.91,
+      "p99_ms": 340.96,
+      "errors": 0,
+      "statuses": {
+        "200": 99
+      },
+      "cpu_percent_one_core": 68.71,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4771,
+      "bytes_max": 4771,
+      "engine": "pynext",
+      "path": "/api/clubs",
+      "concurrency": 8,
+      "repeat": 3
+    },
+    {
+      "requests": 496,
+      "elapsed_seconds": 3.079,
+      "requests_per_second": 161.07,
+      "p50_ms": 189.47,
+      "p95_ms": 232.62,
+      "p99_ms": 932.45,
+      "errors": 0,
+      "statuses": {
+        "200": 496
+      },
+      "cpu_percent_one_core": 107.16,
+      "peak_rss_mib": 401.13,
+      "bytes_min": 3562,
+      "bytes_max": 3562,
+      "engine": "nextjs",
+      "path": "/api/clubs",
+      "concurrency": 32,
+      "repeat": 1
+    },
+    {
+      "requests": 127,
+      "elapsed_seconds": 3.938,
+      "requests_per_second": 32.25,
+      "p50_ms": 990.41,
+      "p95_ms": 1005.77,
+      "p99_ms": 1010.0,
+      "errors": 0,
+      "statuses": {
+        "200": 127
+      },
+      "cpu_percent_one_core": 70.59,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4771,
+      "bytes_max": 4771,
+      "engine": "pynext",
+      "path": "/api/clubs",
+      "concurrency": 32,
+      "repeat": 1
+    },
+    {
+      "requests": 125,
+      "elapsed_seconds": 3.963,
+      "requests_per_second": 31.54,
+      "p50_ms": 995.28,
+      "p95_ms": 1070.66,
+      "p99_ms": 1074.94,
+      "errors": 0,
+      "statuses": {
+        "200": 125
+      },
+      "cpu_percent_one_core": 69.9,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4771,
+      "bytes_max": 4771,
+      "engine": "pynext",
+      "path": "/api/clubs",
+      "concurrency": 32,
+      "repeat": 2
+    },
+    {
+      "requests": 507,
+      "elapsed_seconds": 3.1,
+      "requests_per_second": 163.56,
+      "p50_ms": 185.65,
+      "p95_ms": 275.92,
+      "p99_ms": 864.14,
+      "errors": 0,
+      "statuses": {
+        "200": 507
+      },
+      "cpu_percent_one_core": 116.14,
+      "peak_rss_mib": 401.18,
+      "bytes_min": 3562,
+      "bytes_max": 3562,
+      "engine": "nextjs",
+      "path": "/api/clubs",
+      "concurrency": 32,
+      "repeat": 2
+    },
+    {
+      "requests": 520,
+      "elapsed_seconds": 3.095,
+      "requests_per_second": 168.01,
+      "p50_ms": 181.03,
+      "p95_ms": 215.55,
+      "p99_ms": 875.67,
+      "errors": 0,
+      "statuses": {
+        "200": 520
+      },
+      "cpu_percent_one_core": 108.24,
+      "peak_rss_mib": 401.24,
+      "bytes_min": 3562,
+      "bytes_max": 3562,
+      "engine": "nextjs",
+      "path": "/api/clubs",
+      "concurrency": 32,
+      "repeat": 3
+    },
+    {
+      "requests": 127,
+      "elapsed_seconds": 3.958,
+      "requests_per_second": 32.09,
+      "p50_ms": 984.35,
+      "p95_ms": 1029.19,
+      "p99_ms": 1029.86,
+      "errors": 0,
+      "statuses": {
+        "200": 127
+      },
+      "cpu_percent_one_core": 70.24,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4771,
+      "bytes_max": 4771,
+      "engine": "pynext",
+      "path": "/api/clubs",
+      "concurrency": 32,
+      "repeat": 3
+    },
+    {
+      "requests": 339,
+      "elapsed_seconds": 3.005,
+      "requests_per_second": 112.83,
+      "p50_ms": 8.58,
+      "p95_ms": 10.4,
+      "p99_ms": 13.8,
+      "errors": 0,
+      "statuses": {
+        "200": 339
+      },
+      "cpu_percent_one_core": 98.18,
+      "peak_rss_mib": 401.87,
+      "bytes_min": 3555,
+      "bytes_max": 3555,
+      "engine": "nextjs",
+      "path": "/api/market?category=%EC%B1%85%C2%B7%EA%B5%90%EC%9E%AC&minPrice=1000&maxPrice=90000&page=2",
+      "concurrency": 1,
+      "repeat": 1
+    },
+    {
+      "requests": 89,
+      "elapsed_seconds": 3.005,
+      "requests_per_second": 29.62,
+      "p50_ms": 33.0,
+      "p95_ms": 37.2,
+      "p99_ms": 62.56,
+      "errors": 0,
+      "statuses": {
+        "200": 89
+      },
+      "cpu_percent_one_core": 64.22,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4379,
+      "bytes_max": 4379,
+      "engine": "pynext",
+      "path": "/api/market?category=%EC%B1%85%C2%B7%EA%B5%90%EC%9E%AC&minPrice=1000&maxPrice=90000&page=2",
+      "concurrency": 1,
+      "repeat": 1
+    },
+    {
+      "requests": 90,
+      "elapsed_seconds": 3.019,
+      "requests_per_second": 29.81,
+      "p50_ms": 33.07,
+      "p95_ms": 35.91,
+      "p99_ms": 42.67,
+      "errors": 0,
+      "statuses": {
+        "200": 90
+      },
+      "cpu_percent_one_core": 64.26,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4379,
+      "bytes_max": 4379,
+      "engine": "pynext",
+      "path": "/api/market?category=%EC%B1%85%C2%B7%EA%B5%90%EC%9E%AC&minPrice=1000&maxPrice=90000&page=2",
+      "concurrency": 1,
+      "repeat": 2
+    },
+    {
+      "requests": 349,
+      "elapsed_seconds": 3.009,
+      "requests_per_second": 115.99,
+      "p50_ms": 8.44,
+      "p95_ms": 9.59,
+      "p99_ms": 11.69,
+      "errors": 0,
+      "statuses": {
+        "200": 349
+      },
+      "cpu_percent_one_core": 89.73,
+      "peak_rss_mib": 401.88,
+      "bytes_min": 3555,
+      "bytes_max": 3555,
+      "engine": "nextjs",
+      "path": "/api/market?category=%EC%B1%85%C2%B7%EA%B5%90%EC%9E%AC&minPrice=1000&maxPrice=90000&page=2",
+      "concurrency": 1,
+      "repeat": 2
+    },
+    {
+      "requests": 352,
+      "elapsed_seconds": 3.004,
+      "requests_per_second": 117.18,
+      "p50_ms": 8.32,
+      "p95_ms": 9.38,
+      "p99_ms": 13.77,
+      "errors": 0,
+      "statuses": {
+        "200": 352
+      },
+      "cpu_percent_one_core": 88.88,
+      "peak_rss_mib": 402.07,
+      "bytes_min": 3555,
+      "bytes_max": 3555,
+      "engine": "nextjs",
+      "path": "/api/market?category=%EC%B1%85%C2%B7%EA%B5%90%EC%9E%AC&minPrice=1000&maxPrice=90000&page=2",
+      "concurrency": 1,
+      "repeat": 3
+    },
+    {
+      "requests": 87,
+      "elapsed_seconds": 3.026,
+      "requests_per_second": 28.75,
+      "p50_ms": 33.43,
+      "p95_ms": 40.81,
+      "p99_ms": 51.5,
+      "errors": 0,
+      "statuses": {
+        "200": 87
+      },
+      "cpu_percent_one_core": 62.8,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4379,
+      "bytes_max": 4379,
+      "engine": "pynext",
+      "path": "/api/market?category=%EC%B1%85%C2%B7%EA%B5%90%EC%9E%AC&minPrice=1000&maxPrice=90000&page=2",
+      "concurrency": 1,
+      "repeat": 3
+    },
+    {
+      "requests": 422,
+      "elapsed_seconds": 3.032,
+      "requests_per_second": 139.19,
+      "p50_ms": 49.65,
+      "p95_ms": 86.03,
+      "p99_ms": 125.85,
+      "errors": 0,
+      "statuses": {
+        "200": 422
+      },
+      "cpu_percent_one_core": 121.71,
+      "peak_rss_mib": 402.09,
+      "bytes_min": 3555,
+      "bytes_max": 3555,
+      "engine": "nextjs",
+      "path": "/api/market?category=%EC%B1%85%C2%B7%EA%B5%90%EC%9E%AC&minPrice=1000&maxPrice=90000&page=2",
+      "concurrency": 8,
+      "repeat": 1
+    },
+    {
+      "requests": 101,
+      "elapsed_seconds": 3.255,
+      "requests_per_second": 31.03,
+      "p50_ms": 254.74,
+      "p95_ms": 269.82,
+      "p99_ms": 273.39,
+      "errors": 0,
+      "statuses": {
+        "200": 101
+      },
+      "cpu_percent_one_core": 68.81,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4379,
+      "bytes_max": 4379,
+      "engine": "pynext",
+      "path": "/api/market?category=%EC%B1%85%C2%B7%EA%B5%90%EC%9E%AC&minPrice=1000&maxPrice=90000&page=2",
+      "concurrency": 8,
+      "repeat": 1
+    },
+    {
+      "requests": 100,
+      "elapsed_seconds": 3.238,
+      "requests_per_second": 30.88,
+      "p50_ms": 256.51,
+      "p95_ms": 273.51,
+      "p99_ms": 279.39,
+      "errors": 0,
+      "statuses": {
+        "200": 100
+      },
+      "cpu_percent_one_core": 68.55,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4379,
+      "bytes_max": 4379,
+      "engine": "pynext",
+      "path": "/api/market?category=%EC%B1%85%C2%B7%EA%B5%90%EC%9E%AC&minPrice=1000&maxPrice=90000&page=2",
+      "concurrency": 8,
+      "repeat": 2
+    },
+    {
+      "requests": 461,
+      "elapsed_seconds": 3.039,
+      "requests_per_second": 151.68,
+      "p50_ms": 46.82,
+      "p95_ms": 71.6,
+      "p99_ms": 85.84,
+      "errors": 0,
+      "statuses": {
+        "200": 461
+      },
+      "cpu_percent_one_core": 107.26,
+      "peak_rss_mib": 402.15,
+      "bytes_min": 3555,
+      "bytes_max": 3555,
+      "engine": "nextjs",
+      "path": "/api/market?category=%EC%B1%85%C2%B7%EA%B5%90%EC%9E%AC&minPrice=1000&maxPrice=90000&page=2",
+      "concurrency": 8,
+      "repeat": 2
+    },
+    {
+      "requests": 461,
+      "elapsed_seconds": 3.04,
+      "requests_per_second": 151.62,
+      "p50_ms": 46.14,
+      "p95_ms": 74.91,
+      "p99_ms": 108.89,
+      "errors": 0,
+      "statuses": {
+        "200": 461
+      },
+      "cpu_percent_one_core": 114.78,
+      "peak_rss_mib": 402.17,
+      "bytes_min": 3555,
+      "bytes_max": 3555,
+      "engine": "nextjs",
+      "path": "/api/market?category=%EC%B1%85%C2%B7%EA%B5%90%EC%9E%AC&minPrice=1000&maxPrice=90000&page=2",
+      "concurrency": 8,
+      "repeat": 3
+    },
+    {
+      "requests": 100,
+      "elapsed_seconds": 3.219,
+      "requests_per_second": 31.06,
+      "p50_ms": 254.6,
+      "p95_ms": 276.47,
+      "p99_ms": 283.16,
+      "errors": 0,
+      "statuses": {
+        "200": 100
+      },
+      "cpu_percent_one_core": 68.96,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4379,
+      "bytes_max": 4379,
+      "engine": "pynext",
+      "path": "/api/market?category=%EC%B1%85%C2%B7%EA%B5%90%EC%9E%AC&minPrice=1000&maxPrice=90000&page=2",
+      "concurrency": 8,
+      "repeat": 3
+    },
+    {
+      "requests": 473,
+      "elapsed_seconds": 3.092,
+      "requests_per_second": 152.97,
+      "p50_ms": 198.97,
+      "p95_ms": 239.57,
+      "p99_ms": 880.21,
+      "errors": 0,
+      "statuses": {
+        "200": 473
+      },
+      "cpu_percent_one_core": 114.81,
+      "peak_rss_mib": 402.96,
+      "bytes_min": 3555,
+      "bytes_max": 3555,
+      "engine": "nextjs",
+      "path": "/api/market?category=%EC%B1%85%C2%B7%EA%B5%90%EC%9E%AC&minPrice=1000&maxPrice=90000&page=2",
+      "concurrency": 32,
+      "repeat": 1
+    },
+    {
+      "requests": 124,
+      "elapsed_seconds": 3.973,
+      "requests_per_second": 31.21,
+      "p50_ms": 1018.2,
+      "p95_ms": 1040.09,
+      "p99_ms": 1042.05,
+      "errors": 0,
+      "statuses": {
+        "200": 124
+      },
+      "cpu_percent_one_core": 69.22,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4379,
+      "bytes_max": 4379,
+      "engine": "pynext",
+      "path": "/api/market?category=%EC%B1%85%C2%B7%EA%B5%90%EC%9E%AC&minPrice=1000&maxPrice=90000&page=2",
+      "concurrency": 32,
+      "repeat": 1
+    },
+    {
+      "requests": 124,
+      "elapsed_seconds": 4.107,
+      "requests_per_second": 30.19,
+      "p50_ms": 1020.57,
+      "p95_ms": 1111.59,
+      "p99_ms": 1122.83,
+      "errors": 0,
+      "statuses": {
+        "200": 124
+      },
+      "cpu_percent_one_core": 67.94,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4379,
+      "bytes_max": 4379,
+      "engine": "pynext",
+      "path": "/api/market?category=%EC%B1%85%C2%B7%EA%B5%90%EC%9E%AC&minPrice=1000&maxPrice=90000&page=2",
+      "concurrency": 32,
+      "repeat": 2
+    },
+    {
+      "requests": 485,
+      "elapsed_seconds": 3.102,
+      "requests_per_second": 156.34,
+      "p50_ms": 184.11,
+      "p95_ms": 287.22,
+      "p99_ms": 965.2,
+      "errors": 0,
+      "statuses": {
+        "200": 485
+      },
+      "cpu_percent_one_core": 132.81,
+      "peak_rss_mib": 403.44,
+      "bytes_min": 3555,
+      "bytes_max": 3555,
+      "engine": "nextjs",
+      "path": "/api/market?category=%EC%B1%85%C2%B7%EA%B5%90%EC%9E%AC&minPrice=1000&maxPrice=90000&page=2",
+      "concurrency": 32,
+      "repeat": 2
+    },
+    {
+      "requests": 521,
+      "elapsed_seconds": 3.095,
+      "requests_per_second": 168.33,
+      "p50_ms": 177.83,
+      "p95_ms": 233.74,
+      "p99_ms": 791.65,
+      "errors": 0,
+      "statuses": {
+        "200": 521
+      },
+      "cpu_percent_one_core": 106.94,
+      "peak_rss_mib": 403.6,
+      "bytes_min": 3555,
+      "bytes_max": 3555,
+      "engine": "nextjs",
+      "path": "/api/market?category=%EC%B1%85%C2%B7%EA%B5%90%EC%9E%AC&minPrice=1000&maxPrice=90000&page=2",
+      "concurrency": 32,
+      "repeat": 3
+    },
+    {
+      "requests": 123,
+      "elapsed_seconds": 4.002,
+      "requests_per_second": 30.73,
+      "p50_ms": 1021.98,
+      "p95_ms": 1070.91,
+      "p99_ms": 1073.47,
+      "errors": 0,
+      "statuses": {
+        "200": 123
+      },
+      "cpu_percent_one_core": 68.71,
+      "peak_rss_mib": 94.15,
+      "bytes_min": 4379,
+      "bytes_max": 4379,
+      "engine": "pynext",
+      "path": "/api/market?category=%EC%B1%85%C2%B7%EA%B5%90%EC%9E%AC&minPrice=1000&maxPrice=90000&page=2",
+      "concurrency": 32,
+      "repeat": 3
+    }
+  ]
+}

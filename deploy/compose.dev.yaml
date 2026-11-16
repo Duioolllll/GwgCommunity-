@@ -1,4 +1,5 @@
 # Local development database. The production compose must not publish the DB port.
+# 개발 DB 포트는 루프백에만 노출하며 운영 DB 설정과 분리한다.
 services:
   db:
     image: postgres:17

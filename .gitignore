@@ -18,3 +18,11 @@ python_app/development.sqlite3
 backups/
 python_app/private_uploads/
 python_app/static_collected/
+
+# Local editor settings and generated runtime/build state
+.idea/
+.pynext/
+*.save
+pynext_app/development.sqlite3
+pynext_app/private_uploads/
+pynext_app/static_collected/

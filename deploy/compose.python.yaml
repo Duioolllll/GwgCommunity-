@@ -1,29 +1,41 @@
-# Prepare a separate Python DB and env file. This does not replace the current service.
+# Django 앱과 별도 PostgreSQL을 연결하며 비밀번호는 외부에서 받는다.
+name: gwgcommunity-python
 services:
   app:
-    image: ${PYTHON_APP_IMAGE:?set a verified image}
+    image: ${PYTHON_APP_IMAGE:-gwgcommunity-python:local}
+    build:
+      context: ../python_app
     env_file: ${PYTHON_ENV_FILE:?set the protected Django env file}
     environment:
       DJANGO_DEBUG: '0'
+      DJANGO_DATABASE_URL: postgresql://${PYTHON_DB_USER:-gwg}:${PYTHON_DB_PASSWORD:?set a URL-safe password}@db:5432/${PYTHON_DB_NAME:-gwg_python}
     ports:
       - '127.0.0.1:${PYTHON_APP_PORT:-18080}:8000'
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'python', '-c', 'import urllib.request; r=urllib.request.Request("http://127.0.0.1:8000/healthz/", headers={"Host":"localhost","X-Forwarded-Proto":"https"}); urllib.request.urlopen(r, timeout=5)']
+      interval: 30s
+      timeout: 10s
+      start_period: 20s
+      retries: 3
     restart: unless-stopped
+    init: true
+    security_opt: ['no-new-privileges:true']
   db:
     image: postgres:17
     environment:
-      POSTGRES_USER: ${PYTHON_DB_USER:?set database user}
-      POSTGRES_PASSWORD: ${PYTHON_DB_PASSWORD:?set database password}
-      POSTGRES_DB: ${PYTHON_DB_NAME:?set database name}
+      POSTGRES_USER: ${PYTHON_DB_USER:-gwg}
+      POSTGRES_PASSWORD: ${PYTHON_DB_PASSWORD:?set a URL-safe password}
+      POSTGRES_DB: ${PYTHON_DB_NAME:-gwg_python}
     volumes:
       - python-db:/var/lib/postgresql/data
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
-      interval: 10s
+      interval: 5s
       timeout: 5s
-      retries: 6
+      retries: 12
     restart: unless-stopped
 volumes:
   python-db:

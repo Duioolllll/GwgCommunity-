@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+.pynext
+__pycache__
+**/__pycache__
+*.pyc
+static_collected
+private_uploads
+benchmarks
+tests
+docs

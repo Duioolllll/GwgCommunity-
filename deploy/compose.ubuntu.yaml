@@ -1,0 +1,26 @@
+# PyNext 앱의 이미지·환경 파일·호스트 포트를 변수로 선택한다.
+name: gwgcommunity-pynext
+services:
+  app:
+    image: ${PYNEXT_APP_IMAGE:-gwgcommunity-pynext:release-20261115}
+    build:
+      context: ../pynext_app
+    env_file: ${PYNEXT_ENV_FILE:-.env.pynext}
+    environment:
+      DJANGO_DEBUG: '0'
+    ports:
+      - '127.0.0.1:${PYNEXT_APP_PORT:-18083}:8000'
+    healthcheck:
+      test: ['CMD', 'python', '-c', 'import urllib.request; r=urllib.request.Request("http://127.0.0.1:8000/health/database", headers={"Host":"localhost","X-Forwarded-Proto":"https"}); urllib.request.urlopen(r, timeout=5)']
+      interval: 15s
+      timeout: 10s
+      start_period: 20s
+      retries: 3
+    restart: unless-stopped
+    init: true
+    security_opt: ['no-new-privileges:true']
+    networks: [existing-data]
+networks:
+  existing-data:
+    external: true
+    name: ${PYNEXT_DATABASE_NETWORK:-gwgcommunity-python_default}
