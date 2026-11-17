@@ -1,19 +1,16 @@
-# 제출용 기능·분기 설명: 조건식은 실제 코드의 평가 순서와 반환값을 기준으로 읽는다.
-# 표현식·화면 분기 목록 (같은 조건이 다른 함수에서 반복될 수 있음):
-# - 단락 평가 `request.user.is_authenticated or request.path.startswith(('/auth/', '/api/auth/', '/admin/', '/api/admin/', '/api/media', '/media/', '/api/csrf'))`: 왼쪽 값이 참이면 남은 항을 평가하지 않고 그 값을 사용한다.
+# 이 파일은 관련 기능을 실행하기 위한 코드와 설정을 모아 둔다.
 # 인증된 응답과 인증·관리·미디어 경로의 응답에 비공개 캐시 금지를 적용한다.
-# 기능 `PrivateResponseMiddleware`: Never share sessions, moderation queues, or private media via a proxy cache..
 class PrivateResponseMiddleware:
     """Never share sessions, moderation queues, or private media via a proxy cache."""
 
-    # 기능 `__init__`: 먼저 `self.get_response = get_response`로 상태 또는 조회 조건을 갱신한다.
+    # 이 기능이 사용할 다음 처리 함수를 기억해 둔다.
     def __init__(self, get_response):
         self.get_response = get_response
 
-    # 기능 `__call__`: 먼저 `response = self.get_response(request)`로 상태 또는 조회 조건을 갱신한다.
+    # 요청이 들어올 때마다 필요한 검사와 응답 처리를 실행한다.
     def __call__(self, request):
         response = self.get_response(request)
-        # 조건 분기 `request.user.is_authenticated or request.path.startswith(('/auth/', '/api/auth/', '/admin/', '/api/admin/', '/api/media', '/media/', '/api/csrf'))`: 참이면 먼저 `response['Cache-Control'] = 'private, no-store'`로 상태 또는 조회 조건을 갱신한다. 거짓이면 이 블록을 건너뛰고 이후 코드로 진행한다.
+        # 로그인한 요청이나 인증·관리·사진 관련 응답은 다른 사람에게 재사용되지 않도록 캐시를 막는다.
         if request.user.is_authenticated or request.path.startswith(('/auth/', '/api/auth/', '/admin/', '/api/admin/', '/api/media', '/media/', '/api/csrf')):
             response['Cache-Control'] = 'private, no-store'
         return response

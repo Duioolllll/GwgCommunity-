@@ -1,7 +1,4 @@
-# 제출용 기능·분기 설명: 조건식은 실제 코드의 평가 순서와 반환값을 기준으로 읽는다.
-# 표현식·화면 분기 목록 (같은 조건이 다른 함수에서 반복될 수 있음):
-# - 컴프리헨션: `MODELS`의 각 `name`를 순회한다.
-# - 컴프리헨션: `MODELS`의 각 `name`를 순회한다.
+# 이 파일은 관련 기능을 실행하기 위한 코드와 설정을 모아 둔다.
 import uuid
 from django.db import migrations, models
 
@@ -9,18 +6,18 @@ from django.db import migrations, models
 MODELS = ('reservation', 'clubpost', 'recruitment', 'application', 'report')
 
 
-# 기능 `populate_public_ids`: 먼저 `alias = schema_editor.connection.alias`로 상태 또는 조회 조건을 갱신한다.
+# 기존 데이터에도 공개용 고유 번호를 채워 넣는다.
 def populate_public_ids(apps, schema_editor):
     alias = schema_editor.connection.alias
-    # 반복 `MODELS`: 각 항목을 `name`에 담아 먼저 `model = apps.get_model('core', name)`로 상태 또는 조회 조건을 갱신한다. 항목이 없으면 본문을 건너뛴다.
+    # 준비한 목록을 하나씩 읽어 아래 작업을 반복한다. 목록이 비어 있으면 건너뛴다.
     for name in MODELS:
         model = apps.get_model('core', name)
-        # 반복 `model.objects.using(alias).filter(public_id__isnull=True).values_list('pk', flat=True).iterator()`: 각 항목을 `pk`에 담아 먼저 `model.objects.using(alias).filter(pk=pk).update(public_id=uuid.uuid4())`를 실행한다. 항목이 없으면 본문을 건너뛴다.
+        # 준비한 목록을 하나씩 읽어 아래 작업을 반복한다. 목록이 비어 있으면 건너뛴다.
         for pk in model.objects.using(alias).filter(public_id__isnull=True).values_list('pk', flat=True).iterator():
             model.objects.using(alias).filter(pk=pk).update(public_id=uuid.uuid4())
 
 
-# 기능 `Migration`: 관련 데이터·상태 또는 동작을 하나의 형식으로 정의한다.
+# 데이터베이스의 표와 항목을 어떤 순서로 바꿀지 기록한다.
 class Migration(migrations.Migration):
     dependencies = [('core', '0005_alter_user_options_and_more')]
     operations = [

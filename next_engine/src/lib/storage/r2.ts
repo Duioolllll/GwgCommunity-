@@ -1,4 +1,3 @@
-/* 제출용 주석: 함수 역할, 조건의 참·거짓 결과, 단락 평가 및 예외·반복 경로를 설명한다. */
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 export interface ObjectStore {
@@ -8,26 +7,22 @@ export interface ObjectStore {
 }
 let store: ObjectStore | undefined;
 // 필수 R2 설정을 확인하고 S3 호환 객체 저장소 클라이언트를 재사용한다.
-// 기능 `getObjectStore`(): `store` 조건을 추가로 검사한다.
+// 이미지를 넣고 꺼낼 Cloudflare R2 저장소에 연결한다.
 export function getObjectStore(): ObjectStore {
-  // 조건 `store`: 참이면 `store`를 반환한다. 거짓이면 별도 처리 없이 다음 구문으로 진행한다.
+  // 확인할 조건: 파일 저장소 있음 또는 true. 해당하면 파일 저장소을 돌려준다.
   if (store) return store;
   const { R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME } = process.env;
-  // 조건 `!R2_ACCOUNT_ID || !/^[a-f0-9]{32}$/i.test(R2_ACCOUNT_ID) || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !R2_BUCKET_NAME`: 참이면 `new Error("R2 storage configuration is missing or invalid")` 예외를 발생시킨다. 거짓이면 별도 처리 없이 다음 구문으로 진행한다.
-  // 단락 분기 `!R2_ACCOUNT_ID || !/^[a-f0-9]{32}$/i.test(R2_ACCOUNT_ID) || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY`: 거짓인 경우에만 오른쪽 `!R2_BUCKET_NAME`를 평가한다. 그 외에는 왼쪽 값을 유지한다.
-  // 단락 분기 `!R2_ACCOUNT_ID || !/^[a-f0-9]{32}$/i.test(R2_ACCOUNT_ID) || !R2_ACCESS_KEY_ID`: 거짓인 경우에만 오른쪽 `!R2_SECRET_ACCESS_KEY`를 평가한다. 그 외에는 왼쪽 값을 유지한다.
-  // 단락 분기 `!R2_ACCOUNT_ID || !/^[a-f0-9]{32}$/i.test(R2_ACCOUNT_ID)`: 거짓인 경우에만 오른쪽 `!R2_ACCESS_KEY_ID`를 평가한다. 그 외에는 왼쪽 값을 유지한다.
-  // 단락 분기 `!R2_ACCOUNT_ID`: 거짓인 경우에만 오른쪽 `!/^[a-f0-9]{32}$/i.test(R2_ACCOUNT_ID)`를 평가한다. 그 외에는 왼쪽 값을 유지한다.
+  // R2 계정 번호·접속 키·버킷 이름을 모두 설정했는지 확인한다. 빠졌거나 형식이 틀리면 파일 저장을 시작하지 않는다.
   if (!R2_ACCOUNT_ID || !/^[a-f0-9]{32}$/i.test(R2_ACCOUNT_ID) || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !R2_BUCKET_NAME) throw new Error("R2 storage configuration is missing or invalid");
   const bucket = R2_BUCKET_NAME;
   const client = new S3Client({ region: "auto", endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`, credentials: { accessKeyId: R2_ACCESS_KEY_ID, secretAccessKey: R2_SECRET_ACCESS_KEY } });
   store = {
-    // 기능 `put`(key, data, contentType): 먼저 `await client.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: data, ContentType: contentType }));`를 실행한다.
+    // 이미지 파일을 R2 저장소에 올린다.
     async put(key, data, contentType) { await client.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: data, ContentType: contentType })); },
-    // 기능 `get`(key): 먼저 `const result = await client.send(new GetObjectCommand({ Bucket: bucket, Key: key }));`를 실행한다.
-    // 조건 `!result.Body`: 참이면 `new Error("Object body missing")` 예외를 발생시킨다. 거짓이면 별도 처리 없이 다음 구문으로 진행한다.
+    // R2에 저장된 이미지 파일을 읽어 온다.
+    // 확인할 조건: 처리 결과의 Body 없음 또는 false. 해당하면 오류를 알려서 이 요청의 처리를 중단한다.
     async get(key) { const result = await client.send(new GetObjectCommand({ Bucket: bucket, Key: key })); if (!result.Body) throw new Error("Object body missing"); return result.Body.transformToByteArray(); },
-    // 기능 `delete`(key): 먼저 `await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));`를 실행한다.
+    // R2에서 해당 이미지 파일을 지운다.
     async delete(key) { await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key })); },
   };
   return store;

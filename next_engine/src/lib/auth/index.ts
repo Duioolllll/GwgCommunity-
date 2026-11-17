@@ -1,4 +1,3 @@
-/* 제출용 주석: 함수 역할, 조건의 참·거짓 결과, 단락 평가 및 예외·반복 경로를 설명한다. */
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
@@ -10,25 +9,23 @@ import * as schema from "@/lib/db/schema";
 let instance: ReturnType<typeof createAuth> | undefined;
 
 // 비밀키와 기준 URL을 확인한 뒤 DB·메일 연동 인증을 구성한다.
-// 기능 `createAuth`(): 먼저 `const secret = process.env.BETTER_AUTH_SECRET;`를 실행한다.
+// 가입·로그인·인증 메일에 필요한 설정과 처리 방법을 정한다.
 function createAuth() {
   const secret = process.env.BETTER_AUTH_SECRET;
   const baseURL = process.env.BETTER_AUTH_URL;
-  // 조건 `!secret || Buffer.byteLength(secret) < 32`: 참이면 `new Error("BETTER_AUTH_SECRET must contain at least 32 bytes")` 예외를 발생시킨다. 거짓이면 별도 처리 없이 다음 구문으로 진행한다.
-  // 단락 분기 `!secret`: 거짓인 경우에만 오른쪽 `Buffer.byteLength(secret) < 32`를 평가한다. 그 외에는 왼쪽 값을 유지한다.
+  // 인증용 비밀키가 없거나 32바이트보다 짧으면 안전한 로그인을 구성할 수 없어 시작을 중단한다.
   if (!secret || Buffer.byteLength(secret) < 32) throw new Error("BETTER_AUTH_SECRET must contain at least 32 bytes");
-  // 조건 `!baseURL`: 참이면 `new Error("BETTER_AUTH_URL is required")` 예외를 발생시킨다. 거짓이면 별도 처리 없이 다음 구문으로 진행한다.
+  // 서비스 주소 설정이 없으면 인증 링크를 만들 수 없으므로 중단한다.
   if (!baseURL) throw new Error("BETTER_AUTH_URL is required");
   const db = getDb();
-  // 기능 `before`(session): 먼저 `const [account] = await db.select({ status: schema.user.status }).from(schema.user).where(eq(schema.user.id, session.userId));`를 실행한다.
+  // 로그인 정보를 만들기 전에 계정이 정지되었는지 확인한다.
   return betterAuth({
     secret,
     baseURL,
     database: drizzleAdapter(db, { provider: "pg", schema }),
     databaseHooks: { session: { create: { async before(session) {
       const [account] = await db.select({ status: schema.user.status }).from(schema.user).where(eq(schema.user.id, session.userId));
-      // 조건 `!account || account.status === "SUSPENDED"`: 참이면 `new APIError("FORBIDDEN", { message: "로그인할 수 없는 계정입니다." })` 예외를 발생시킨다. 거짓이면 별도 처리 없이 다음 구문으로 진행한다.
-      // 단락 분기 `!account`: 거짓인 경우에만 오른쪽 `account.status === "SUSPENDED"`를 평가한다. 그 외에는 왼쪽 값을 유지한다.
+      // 계정이 없거나 정지된 계정이면 로그인을 허용하지 않는다.
       if (!account || account.status === "SUSPENDED") throw new APIError("FORBIDDEN", { message: "로그인할 수 없는 계정입니다." });
     } } } },
     user: { additionalFields: {
@@ -39,24 +36,18 @@ function createAuth() {
     emailVerification: {
       sendOnSignUp: true,
       sendOnSignIn: true,
-      // 기능 `sendVerificationEmail`({ user, url }): 먼저 `const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM } = process.env;`를 실행한다.
+      // 이메일 확인 링크가 담긴 메일을 보낸다.
       async sendVerificationEmail({ user, url }) {
         const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM } = process.env;
-        // 조건 `!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASSWORD || !SMTP_FROM`: 참이면 `new Error("SMTP configuration is required to send verification email")` 예외를 발생시킨다. 거짓이면 별도 처리 없이 다음 구문으로 진행한다.
-        // 단락 분기 `!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASSWORD`: 거짓인 경우에만 오른쪽 `!SMTP_FROM`를 평가한다. 그 외에는 왼쪽 값을 유지한다.
-        // 단락 분기 `!SMTP_HOST || !SMTP_PORT || !SMTP_USER`: 거짓인 경우에만 오른쪽 `!SMTP_PASSWORD`를 평가한다. 그 외에는 왼쪽 값을 유지한다.
-        // 단락 분기 `!SMTP_HOST || !SMTP_PORT`: 거짓인 경우에만 오른쪽 `!SMTP_USER`를 평가한다. 그 외에는 왼쪽 값을 유지한다.
-        // 단락 분기 `!SMTP_HOST`: 거짓인 경우에만 오른쪽 `!SMTP_PORT`를 평가한다. 그 외에는 왼쪽 값을 유지한다.
+        // 메일 발송에 필요한 서버·계정·발신 주소 중 빠진 항목이 있으면 메일을 보내지 않는다.
         if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASSWORD || !SMTP_FROM) throw new Error("SMTP configuration is required to send verification email");
         const port = Number(SMTP_PORT);
-        // 조건 `!Number.isInteger(port) || port < 1 || port > 65535`: 참이면 `new Error("Invalid SMTP_PORT")` 예외를 발생시킨다. 거짓이면 별도 처리 없이 다음 구문으로 진행한다.
-        // 단락 분기 `!Number.isInteger(port) || port < 1`: 거짓인 경우에만 오른쪽 `port > 65535`를 평가한다. 그 외에는 왼쪽 값을 유지한다.
-        // 단락 분기 `!Number.isInteger(port)`: 거짓인 경우에만 오른쪽 `port < 1`를 평가한다. 그 외에는 왼쪽 값을 유지한다.
+        // 확인할 조건: ((port이 정수임 조건을 만족하지 않음) 또는 (port < 1)) 또는 (port > 65535). 해당하면 오류를 알려서 이 요청의 처리를 중단한다.
         if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error("Invalid SMTP_PORT");
         const transport = nodemailer.createTransport({ host: SMTP_HOST, port, secure: port === 465, requireTLS: port !== 465, auth: { user: SMTP_USER, pass: SMTP_PASSWORD } });
         await transport.sendMail({ from: SMTP_FROM, to: user.email, subject: "GwgCommunity 이메일 확인", text: `이메일 주소를 확인하려면 다음 링크를 여세요:\n\n${url}\n\n요청하지 않았다면 이 메일을 무시하세요.` });
       },
-      // 기능 `afterEmailVerification`(verifiedUser): 먼저 `await db.update(schema.user).set({ status: "VERIFIED_PENDING_INVITE", updatedAt: new Date() }).where(and(eq(schema.user.id, verifiedUser.id), eq(schema.user.status, "UNVERIFIED_EMAIL")));`를 실행한다.
+      // 이메일 확인을 마친 계정을 초대 코드 입력 대기 상태로 바꾼다.
       async afterEmailVerification(verifiedUser) {
         await db.update(schema.user).set({ status: "VERIFIED_PENDING_INVITE", updatedAt: new Date() }).where(and(eq(schema.user.id, verifiedUser.id), eq(schema.user.status, "UNVERIFIED_EMAIL")));
       },
@@ -66,24 +57,22 @@ function createAuth() {
   });
 }
 
-// 기능 `getAuth`(): `instance ??= createAuth()`를 반환한다.
+// 이미 만든 인증 도구가 있으면 재사용하고 없으면 만든다.
 export function getAuth() {
   return instance ??= createAuth();
 }
 
-/** Read current privileges from PostgreSQL; never trust stale cookie-cached role/status. */
-// 기능 `getCurrentUser`(requestHeaders): 먼저 `const session = await getAuth().api.getSession({ headers: requestHeaders });`를 실행한다.
+/** 권한과 계정 상태는 PostgreSQL에서 다시 확인한다. 오래된 로그인 쿠키 정보만 믿고 권한을 허용하지 않는다. */
+// 현재 로그인한 사용자를 찾고 정지된 계정은 제외한다.
 export async function getCurrentUser(requestHeaders: Headers) {
   const session = await getAuth().api.getSession({ headers: requestHeaders });
-  // 조건 `!session`: 참이면 `null`를 반환한다. 거짓이면 별도 처리 없이 다음 구문으로 진행한다.
+  // 확인할 조건: 로그인 정보 없음 또는 false. 해당하면 사용할 수 있는 값이 없다고 알린다.
   if (!session) return null;
-  // Repair an interrupted post-verification callback without changing suspended users.
-  // 조건 `session.user.emailVerified`: 참이면 먼저 `await getDb().update(schema.user).set({ status: "VERIFIED_PENDING_INVITE", updatedAt: new Date() }).where(and(eq(schema.user.id, session.user.id), eq(schema.user.status, "UNVERIFIED_EMAIL")));`를 실행한다. 거짓이면 별도 처리 없이 다음 구문으로 진행한다.
+  // 이메일 확인 후 처리가 중간에 끊긴 계정을 보완하되 정지된 계정의 상태는 바꾸지 않는다.
+  // 확인할 조건: 로그인 정보의 사용자의 이메일 인증 여부 있음 또는 true. 해당하면 아래에 있는 작업을 실행한다.
   if (session.user.emailVerified) {
     await getDb().update(schema.user).set({ status: "VERIFIED_PENDING_INVITE", updatedAt: new Date() }).where(and(eq(schema.user.id, session.user.id), eq(schema.user.status, "UNVERIFIED_EMAIL")));
   }
   const [user] = await getDb().select({ id: schema.user.id, name: schema.user.name, email: schema.user.email, emailVerified: schema.user.emailVerified, role: schema.user.role, status: schema.user.status }).from(schema.user).where(eq(schema.user.id, session.user.id));
-  // 선택 조건 `user?.status === "SUSPENDED"`: 참이면 `null`, 거짓이면 `user ?? null`를 사용한다.
-  // 단락 분기 `user`: null 또는 undefined인 경우에만 오른쪽 `null`를 평가한다. 그 외에는 왼쪽 값을 유지한다.
   return user?.status === "SUSPENDED" ? null : user ?? null;
 }

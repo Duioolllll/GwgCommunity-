@@ -1,8 +1,5 @@
-# 제출용 기능·분기 설명: 조건식은 실제 코드의 평가 순서와 반환값을 기준으로 읽는다.
-# 표현식·화면 분기 목록 (같은 조건이 다른 함수에서 반복될 수 있음):
-# - 단락 평가 `not admin_url or '?' in admin_url or (not admin_url.endswith('/postgres'))`: 왼쪽 값이 참이면 남은 항을 평가하지 않고 그 값을 사용한다.
-# - 단락 평가 `repeat.returncode != 0 and 'Destination is not empty' in repeat.stderr`: 왼쪽 값이 거짓이면 남은 항을 평가하지 않고 그 값을 사용한다.
-# - 컴프리헨션: `range(10)`의 각 `_`를 순회한다.
+
+
 import os, subprocess, uuid, sys
 from pathlib import Path
 import psycopg
@@ -11,24 +8,37 @@ app_root = Path(__file__).resolve().parents[1]
 seed = uuid.uuid4().hex[:10]
 source, target = 'gwg_src_' + seed, 'gwg_dst_' + seed
 admin_url = os.environ.get('GWG_TEST_POSTGRES_ADMIN_URL')
-# 조건 분기 `not admin_url or '?' in admin_url or (not admin_url.endswith('/postgres'))`: 참이면 SystemExit('Set GWG_TEST_POSTGRES_ADMIN_URL to a dedicated test PostgreSQL postgres database URL without query parameters.') 예외를 발생시킨다. 거짓이면 이 블록을 건너뛰고 이후 코드로 진행한다.
+
+
+# 이전 검사에 사용할 관리자 DB 주소가 지정한 안전한 형식이 아닐 때 잘못된 요청이나 설정임을 알리고 처리를 중단한다. 조건에 맞지 않으면 이 부분을 건너뛴다.
 if not admin_url or '?' in admin_url or not admin_url.endswith('/postgres'):
     raise SystemExit('Set GWG_TEST_POSTGRES_ADMIN_URL to a dedicated test PostgreSQL postgres database URL without query parameters.')
 base = admin_url[:-len('postgres')]
 with psycopg.connect(base + 'postgres', autocommit=True) as admin:
     admin.execute(sql.SQL('CREATE DATABASE {}').format(sql.Identifier(source)))
     admin.execute(sql.SQL('CREATE DATABASE {}').format(sql.Identifier(target)))
-# 예외 경계: 본문을 시도하고 . 성공·실패와 관계없이 마지막에 With 구문으로 이어지는 내부 처리를 실행한다.
+
+
+# 실패할 수 있는 작업을 시도한다. 문제가 생기면 아래 except에서 종류에 맞게 처리한다. 문제가 없어도 있어도 finally의 정리 작업은 실행한다.
 try:
     with psycopg.connect(base + source) as conn:
-        # 반복 `sorted((app_root / 'tests/legacy_schema').glob('*.sql'))`: 각 항목을 `file`에 담아 For 구문으로 이어지는 내부 처리를 실행한다. 항목이 없으면 본문을 건너뛴다.
+
+
+        # 목록에서 항목을 하나씩 꺼내 아래 작업을 적용한다. 목록이 비어 있으면 반복하지 않는다.
         for file in sorted((app_root / 'tests/legacy_schema').glob('*.sql')):
-            # 반복 `file.read_text().split('--> statement-breakpoint')`: 각 항목을 `statement`에 담아 If 구문으로 이어지는 내부 처리를 실행한다. 항목이 없으면 본문을 건너뛴다.
+
+
+            # 목록에서 항목을 하나씩 꺼내 아래 작업을 적용한다. 목록이 비어 있으면 반복하지 않는다.
             for statement in file.read_text().split('--> statement-breakpoint'):
-                # 조건 분기 `statement.strip()`: 참이면 먼저 `conn.execute(statement)`를 실행한다. 거짓이면 이 블록을 건너뛰고 이후 코드로 진행한다.
+
+
+                # 읽은 SQL 문장이 공백만 있는 것이 아닐 때 필요한 저장·안내 작업을 실행한다. 조건에 맞지 않으면 이 부분을 건너뛴다.
                 if statement.strip(): conn.execute(statement)
         conn.execute('INSERT INTO "user" (id, name, email, email_verified, role, status) VALUES (%s,%s,%s,true,%s,%s)', ('old-admin','관리자','admin@example.com','admin','ACTIVE_STUDENT'))
         conn.execute('INSERT INTO "user" (id, name, email, email_verified, role, status) VALUES (%s,%s,%s,true,%s,%s)', ('old-student','학생','student@example.com','student','ACTIVE_STUDENT'))
+
+
+        # 목록의 각 항목을 필요한 응답 정보로 바꿔 한데 모은다.
         club_id, market_id, finder_id, media_id, recruitment_id, club_post_id, application_id, reservation_id, report_id, invite_id = [uuid.uuid4() for _ in range(10)]
         conn.execute('INSERT INTO clubs (id,slug,name,category,introduction,is_public) VALUES (%s,%s,%s,%s,%s,true)', (club_id,'music','음악','예술','소개'))
         conn.execute('INSERT INTO club_members (club_id,user_id,role) VALUES (%s,%s,%s)', (club_id,'old-admin','manager'))
@@ -49,26 +59,57 @@ try:
     manage = str(app_root / 'manage.py')
     subprocess.run([py,manage,'migrate','--noinput'], env=env, check=True, capture_output=True)
     inspect = subprocess.run([py,manage,'import_legacy'], env=env, check=True, text=True, capture_output=True)
+
+
+    # 테스트가 기대하는 조건을 만족하는지 확인한다. 맞지 않으면 실패로 알린다.
     assert 'Read-only inspection only' in inspect.stdout
     apply = subprocess.run([py,manage,'import_legacy','--apply'], env=env, check=True, text=True, capture_output=True)
+
+
+    # 테스트가 기대하는 조건을 만족하는지 확인한다. 맞지 않으면 실패로 알린다.
     assert 'Copy complete' in apply.stdout
     with psycopg.connect(base+target) as conn:
-        # 반복 `[('core_user', 2), ('core_club', 1), ('core_application', 1), ('core_marketpost', 1), ('core_reservation', 1), ('core_invitation', 1), ('core_invitationattempts', 1), ('core_finderpost', 1), ('core_mediaasset', 1), ('core_report', 1), ('core_auditlog', 1)]`: 각 항목을 `(table, expected)`에 담아 먼저 `n = conn.execute(sql.SQL('select count(*) from {}').format(sql.Identifier(table))).fetchone()[0]`로 상태 또는 조회 조건을 갱신한다. 항목이 없으면 본문을 건너뛴다.
+
+
+        # 목록에서 항목을 하나씩 꺼내 아래 작업을 적용한다. 목록이 비어 있으면 반복하지 않는다.
         for table, expected in [('core_user',2),('core_club',1),('core_application',1),('core_marketpost',1),('core_reservation',1),('core_invitation',1),('core_invitationattempts',1),('core_finderpost',1),('core_mediaasset',1),('core_report',1),('core_auditlog',1)]:
             n=conn.execute(sql.SQL('select count(*) from {}').format(sql.Identifier(table))).fetchone()[0]
+
+
+            # 테스트가 기대하는 조건을 만족하는지 확인한다. 맞지 않으면 실패로 알린다.
             assert n==expected,(table,n)
+
+
+        # 테스트가 기대하는 조건을 만족하는지 확인한다. 맞지 않으면 실패로 알린다.
         assert conn.execute('select target_id from core_report').fetchone()[0] == str(club_post_id)
-        # 반복 `[('core_clubpost', club_post_id), ('core_recruitment', recruitment_id), ('core_application', application_id), ('core_reservation', reservation_id), ('core_report', report_id)]`: 각 항목을 `(table, expected)`에 담아 Assert 구문으로 이어지는 내부 처리를 실행한다. 항목이 없으면 본문을 건너뛴다.
+
+
+        # 목록에서 항목을 하나씩 꺼내 아래 작업을 적용한다. 목록이 비어 있으면 반복하지 않는다.
         for table, expected in [('core_clubpost', club_post_id), ('core_recruitment', recruitment_id), ('core_application', application_id), ('core_reservation', reservation_id), ('core_report', report_id)]:
+
+
+            # 테스트가 기대하는 조건을 만족하는지 확인한다. 맞지 않으면 실패로 알린다.
             assert conn.execute(sql.SQL('select public_id from {}').format(sql.Identifier(table))).fetchone()[0] == expected
+
+
+        # 테스트가 기대하는 조건을 만족하는지 확인한다. 맞지 않으면 실패로 알린다.
         assert conn.execute("select legacy_auth_id from core_user where email='student@example.com'").fetchone()[0] == 'old-student'
     verified = subprocess.run([py,manage,'import_legacy','--verify'], env=env, text=True, capture_output=True, check=True)
+
+
+    # 테스트가 기대하는 조건을 만족하는지 확인한다. 맞지 않으면 실패로 알린다.
     assert 'Row counts match' in verified.stdout
     repeat = subprocess.run([py,manage,'import_legacy','--apply'], env=env, text=True, capture_output=True)
+
+
+    # 테스트가 기대하는 조건을 만족하는지 확인한다. 맞지 않으면 실패로 알린다.
+    # 여러 조건을 모두 만족해야 한다. 앞에서 만족하지 못하면 뒤 조건은 확인하지 않는다.
     assert repeat.returncode != 0 and 'Destination is not empty' in repeat.stderr
     print('Legacy migration fixture, relationships, and repeat refusal: PASS')
 finally:
     with psycopg.connect(base + 'postgres', autocommit=True) as admin:
-        # 반복 `(source, target)`: 각 항목을 `name`에 담아 먼저 `admin.execute(sql.SQL('DROP DATABASE {} WITH (FORCE)').format(sql.Identifier(name)))`를 실행한다. 항목이 없으면 본문을 건너뛴다.
+
+
+        # 목록에서 항목을 하나씩 꺼내 아래 작업을 적용한다. 목록이 비어 있으면 반복하지 않는다.
         for name in (source,target):
             admin.execute(sql.SQL('DROP DATABASE {} WITH (FORCE)').format(sql.Identifier(name)))

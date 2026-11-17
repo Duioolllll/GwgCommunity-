@@ -1,26 +1,46 @@
-# PyNext 앱의 이미지·환경 파일·호스트 포트를 변수로 선택한다.
 name: gwgcommunity-pynext
+# 함께 실행할 앱과 데이터베이스를 아래에 정한다.
 services:
+  # 웹 요청을 처리할 프로그램의 실행 설정이다.
   app:
+    # 이미 만들어진 Docker 이미지와 버전을 선택한다.
     image: ${PYNEXT_APP_IMAGE:-gwgcommunity-pynext:release-20261115}
+    # 소스 파일로부터 실행용 Docker 이미지를 만드는 방법이다.
     build:
+      # 이미지를 만들 때 사용할 소스 폴더다.
       context: ../pynext_app
+    # 실제 접속 주소와 비밀값은 이 설정 파일에서 읽는다.
     env_file: ${PYNEXT_ENV_FILE:-.env.pynext}
+    # 이 프로그램에 전달할 설정값을 아래에 적는다.
     environment:
+      # 개발 중 오류 화면을 보여 줄지 정한다. 실제 서비스에서는 0으로 둔다.
       DJANGO_DEBUG: '0'
+    # 컴퓨터의 포트와 컨테이너 안의 포트를 연결한다. 127.0.0.1은 같은 컴퓨터에서만 접속할 수 있다.
     ports:
       - '127.0.0.1:${PYNEXT_APP_PORT:-18083}:8000'
+    # 서버나 데이터베이스가 정상적으로 응답하는지 주기적으로 확인한다.
     healthcheck:
+      # 아래 명령이 성공하면 정상적으로 동작한다고 판단한다.
       test: ['CMD', 'python', '-c', 'import urllib.request; r=urllib.request.Request("http://127.0.0.1:8000/health/database", headers={"Host":"localhost","X-Forwarded-Proto":"https"}); urllib.request.urlopen(r, timeout=5)']
+      # 상태를 확인하는 시간 간격이다.
       interval: 15s
+      # 한 번 확인할 때 응답을 기다릴 최대 시간이다.
       timeout: 10s
+      # 처음 켜질 때 준비 시간을 주고 이 동안의 실패는 바로 고장으로 세지 않는다.
       start_period: 20s
+      # 상태 확인이 연속으로 몇 번 실패하면 비정상으로 볼지 정한다.
       retries: 3
+    # 사용자가 직접 멈춘 경우가 아니면 꺼졌을 때 다시 실행한다.
     restart: unless-stopped
+    # 종료된 하위 작업을 정리할 작은 관리 프로그램을 함께 실행한다.
     init: true
+    # 실행 중 더 높은 권한을 얻지 못하도록 제한한다.
     security_opt: ['no-new-privileges:true']
+    # 앱과 데이터베이스가 서로 연결할 통신망을 정한다.
     networks: [existing-data]
+# 앱과 데이터베이스가 서로 연결할 통신망을 정한다.
 networks:
   existing-data:
+    # 여기서 새로 만들지 않고 이미 있는 통신망을 사용한다.
     external: true
     name: ${PYNEXT_DATABASE_NETWORK:-gwgcommunity-python_default}

@@ -1,9 +1,9 @@
-# 제출용 기능·분기 설명: 조건식은 실제 코드의 평가 순서와 반환값을 기준으로 읽는다.
+# 이 파일은 관련 기능을 실행하기 위한 코드와 설정을 모아 둔다.
 from django.db import migrations, models
 from django.utils import timezone
 
 
-# 기능 `Migration`: 관련 데이터·상태 또는 동작을 하나의 형식으로 정의한다.
+# 데이터베이스의 표와 항목을 어떤 순서로 바꿀지 기록한다.
 class Migration(migrations.Migration):
     dependencies = [('core', '0006_public_identifiers')]
     operations = [migrations.AddField(

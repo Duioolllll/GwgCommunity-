@@ -1,9 +1,8 @@
 // 구현 미반영: 사용자 간 메시지·관심 목록, 동아리 행사 체크인·팀원 매칭·확장 포트폴리오, 지원 학년·관심 분야 전용 필터 필드, 분실물 수령 확인·인계 이력 모델이 없다.
-/* 제출용 주석: 함수 역할, 조건의 참·거짓 결과, 단락 평가 및 예외·반복 경로를 설명한다. */
 import { sql } from "drizzle-orm";
 import { bigint, boolean, check, date, index, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 
-// Better Auth core tables. Privileged fields must never be accepted from sign-up input.
+// 로그인 도구가 사용하는 기본 저장 항목이다. 가입자가 관리자 권한 등을 직접 정하지 못하게 한다.
 // 아래 enum과 테이블은 애플리케이션이 사용하는 PostgreSQL 스키마다.
 export const userRole = pgEnum("user_role", ["student", "admin"]);
 export const userStatus = pgEnum("user_status", ["UNVERIFIED_EMAIL", "VERIFIED_PENDING_INVITE", "ACTIVE_STUDENT", "SUSPENDED"]);
@@ -27,8 +26,7 @@ export const user = pgTable("user", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
-// 기능 `콜백`(): `user.id` 평가 결과를 반환한다.
-// 기능 `콜백`(t): `[index("session_user_idx").on(t.userId)]` 평가 결과를 반환한다.
+// 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
 export const session = pgTable("session", {
   id: text("id").primaryKey(),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
@@ -39,8 +37,7 @@ export const session = pgTable("session", {
   userAgent: text("user_agent"),
   userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
 }, (t) => [index("session_user_idx").on(t.userId)]);
-// 기능 `콜백`(): `user.id` 평가 결과를 반환한다.
-// 기능 `콜백`(t): `[index("account_user_idx").on(t.userId), uniqueIndex("account_provider_identity_idx").on(t.providerId, t.accountId)]` 평가 결과를 반환한다.
+// 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
 export const account = pgTable("account", {
   id: text("id").primaryKey(),
   accountId: text("account_id").notNull(),
@@ -53,7 +50,7 @@ export const account = pgTable("account", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("account_user_idx").on(t.userId), uniqueIndex("account_provider_identity_idx").on(t.providerId, t.accountId)]);
-// 기능 `콜백`(t): `[index("verification_identifier_idx").on(t.identifier)]` 평가 결과를 반환한다.
+// 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
 export const verification = pgTable("verification", {
   id: text("id").primaryKey(), identifier: text("identifier").notNull(), value: text("value").notNull(),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
@@ -61,20 +58,18 @@ export const verification = pgTable("verification", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("verification_identifier_idx").on(t.identifier)]);
 
-// Better Auth's database rate limiter uses atomic conditional updates.
+// 로그인 도구는 요청 횟수를 한 번의 조건부 저장으로 바꿔 동시에 요청해도 제한 횟수가 틀어지지 않게 한다.
 export const rateLimit = pgTable("rate_limit", {
   id: text("id").primaryKey(), key: text("key").notNull().unique(),
   count: integer("count").notNull(), lastRequest: bigint("last_request", { mode: "number" }).notNull(),
 });
-// 기능 `콜백`(): `user.id` 평가 결과를 반환한다.
+// 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
 export const invitationAttempts = pgTable("invitation_attempts", {
   userId: text("user_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
   count: integer("count").notNull(), windowStart: timestamp("window_start", { withTimezone: true }).notNull(),
 });
 
-// 기능 `콜백`(): `user.id` 평가 결과를 반환한다.
-// 기능 `콜백`(): `user.id` 평가 결과를 반환한다.
-// 기능 `콜백`(t): `[check("invitations_redemption_pair", sql`(${t.redeemedAt} IS NULL) = (${t.redeemedBy} IS NULL)`)]` 평가 결과를 반환한다.
+// 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
 export const invitations = pgTable("invitations", {
   id: uuid("id").primaryKey().defaultRandom(), codeHash: text("code_hash").notNull().unique(),
   issuedBy: text("issued_by").notNull().references(() => user.id),
@@ -83,8 +78,7 @@ export const invitations = pgTable("invitations", {
   revokedAt: timestamp("revoked_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [check("invitations_redemption_pair", sql`(${t.redeemedAt} IS NULL) = (${t.redeemedBy} IS NULL)`)]);
-// 기능 `콜백`(): `user.id` 평가 결과를 반환한다.
-// 기능 `콜백`(t): `[check("market_price_nonnegative", sql`${t.price} >= 0`), index("market_search_idx").on(t.status, t.category, t.createdAt)]` 평가 결과를 반환한다.
+// 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
 export const marketPosts = pgTable("market_posts", {
   id: uuid("id").primaryKey().defaultRandom(), ownerId: text("owner_id").notNull().references(() => user.id),
   title: varchar("title", { length: 120 }).notNull(), description: text("description").notNull(),
@@ -93,9 +87,7 @@ export const marketPosts = pgTable("market_posts", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [check("market_price_nonnegative", sql`${t.price} >= 0`), index("market_search_idx").on(t.status, t.category, t.createdAt)]);
-// 기능 `콜백`(): `marketPosts.id` 평가 결과를 반환한다.
-// 기능 `콜백`(): `user.id` 평가 결과를 반환한다.
-// 기능 `콜백`(t): `[uniqueIndex("market_one_active_reservation_idx").on(t.postId).where(sql`${t.status} = 'ACTIVE'`), index("reservation_requester_idx").on(t.requesterId)]` 평가 결과를 반환한다.
+// 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
 export const marketReservations = pgTable("market_reservations", {
   id: uuid("id").primaryKey().defaultRandom(), postId: uuid("post_id").notNull().references(() => marketPosts.id, { onDelete: "cascade" }),
   requesterId: text("requester_id").notNull().references(() => user.id), status: reservationStatus("status").notNull().default("ACTIVE"),
@@ -107,40 +99,32 @@ export const clubs = pgTable("clubs", {
   introduction: text("introduction").notNull(), isPublic: boolean("is_public").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
-// 기능 `콜백`(): `clubs.id` 평가 결과를 반환한다.
-// 기능 `콜백`(): `user.id` 평가 결과를 반환한다.
-// 기능 `콜백`(t): `[primaryKey({ columns: [t.clubId, t.userId] })]` 평가 결과를 반환한다.
+// 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
 export const clubMembers = pgTable("club_members", {
   clubId: uuid("club_id").notNull().references(() => clubs.id, { onDelete: "cascade" }),
   userId: text("user_id").notNull().references(() => user.id), role: clubRole("role").notNull().default("member"),
 }, (t) => [primaryKey({ columns: [t.clubId, t.userId] })]);
-// 기능 `콜백`(): `clubs.id` 평가 결과를 반환한다.
-// 기능 `콜백`(): `user.id` 평가 결과를 반환한다.
-// 기능 `콜백`(t): `[index("club_posts_club_idx").on(t.clubId, t.createdAt)]` 평가 결과를 반환한다.
+// 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
 export const clubPosts = pgTable("club_posts", {
   id: uuid("id").primaryKey().defaultRandom(), clubId: uuid("club_id").notNull().references(() => clubs.id, { onDelete: "cascade" }),
   authorId: text("author_id").notNull().references(() => user.id), title: varchar("title", { length: 120 }).notNull(),
   content: text("content").notNull(), isPublic: boolean("is_public").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("club_posts_club_idx").on(t.clubId, t.createdAt)]);
-// 기능 `콜백`(): `clubs.id` 평가 결과를 반환한다.
-// 기능 `콜백`(t): `[check("recruitment_dates_ordered", sql`${t.closesAt} > ${t.opensAt}`), index("recruitment_club_idx").on(t.clubId, t.isOpen)]` 평가 결과를 반환한다.
+// 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
 export const clubRecruitments = pgTable("club_recruitments", {
   id: uuid("id").primaryKey().defaultRandom(), clubId: uuid("club_id").notNull().references(() => clubs.id, { onDelete: "cascade" }),
   title: varchar("title", { length: 120 }).notNull(), description: text("description").notNull(),
   opensAt: timestamp("opens_at", { withTimezone: true }).notNull(), closesAt: timestamp("closes_at", { withTimezone: true }).notNull(),
   isOpen: boolean("is_open").notNull().default(false),
 }, (t) => [check("recruitment_dates_ordered", sql`${t.closesAt} > ${t.opensAt}`), index("recruitment_club_idx").on(t.clubId, t.isOpen)]);
-// 기능 `콜백`(): `clubRecruitments.id` 평가 결과를 반환한다.
-// 기능 `콜백`(): `user.id` 평가 결과를 반환한다.
-// 기능 `콜백`(t): `[uniqueIndex("application_recruitment_user_idx").on(t.recruitmentId, t.applicantId)]` 평가 결과를 반환한다.
+// 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
 export const clubApplications = pgTable("club_applications", {
   id: uuid("id").primaryKey().defaultRandom(), recruitmentId: uuid("recruitment_id").notNull().references(() => clubRecruitments.id, { onDelete: "cascade" }),
   applicantId: text("applicant_id").notNull().references(() => user.id), answers: jsonb("answers").notNull(),
   status: applicationStatus("status").notNull().default("SUBMITTED"), createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("application_recruitment_user_idx").on(t.recruitmentId, t.applicantId)]);
-// 기능 `콜백`(): `user.id` 평가 결과를 반환한다.
-// 기능 `콜백`(t): `[index("finder_search_idx").on(t.kind, t.status, t.category, t.occurredAt)]` 평가 결과를 반환한다.
+// 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
 export const finderPosts = pgTable("finder_posts", {
   id: uuid("id").primaryKey().defaultRandom(), ownerId: text("owner_id").notNull().references(() => user.id),
   kind: finderKind("kind").notNull(), title: varchar("title", { length: 120 }).notNull(), category: varchar("category", { length: 50 }).notNull(),
@@ -148,41 +132,33 @@ export const finderPosts = pgTable("finder_posts", {
   status: finderStatus("status").notNull().default("ACTIVE"), publicApproval: moderationStatus("public_approval").notNull().default("PENDING"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("finder_search_idx").on(t.kind, t.status, t.category, t.occurredAt)]);
-// 기능 `콜백`(): `finderPosts.id` 평가 결과를 반환한다.
-// 기능 `콜백`(): `finderPosts.id` 평가 결과를 반환한다.
-// 기능 `콜백`(t): `[primaryKey({ columns: [t.lostId, t.foundId] }), check("finder_match_score_range", sql`${t.score} BETWEEN 0 AND 100`), check("finder_match_distinct", sql`${t.lostId} <> ${t.foundId}`)]` 평가 결과를 반환한다.
+// 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
 export const finderMatches = pgTable("finder_matches", {
   lostId: uuid("lost_id").notNull().references(() => finderPosts.id, { onDelete: "cascade" }),
   foundId: uuid("found_id").notNull().references(() => finderPosts.id, { onDelete: "cascade" }), score: integer("score").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [primaryKey({ columns: [t.lostId, t.foundId] }), check("finder_match_score_range", sql`${t.score} BETWEEN 0 AND 100`), check("finder_match_distinct", sql`${t.lostId} <> ${t.foundId}`)]);
-// 기능 `콜백`(): `user.id` 평가 결과를 반환한다.
-// 기능 `콜백`(t): `[check("media_size_positive", sql`${t.size} > 0`)]` 평가 결과를 반환한다.
+// 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
 export const mediaAssets = pgTable("media_assets", {
   id: uuid("id").primaryKey().defaultRandom(), ownerId: text("owner_id").notNull().references(() => user.id),
   storageKey: text("storage_key").notNull().unique(), contentType: varchar("content_type", { length: 100 }).notNull(), size: integer("size").notNull(),
   moderation: moderationStatus("moderation").notNull().default("PENDING"), createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [check("media_size_positive", sql`${t.size} > 0`)]);
-// 기능 `콜백`(): `user.id` 평가 결과를 반환한다.
-// 기능 `콜백`(t): `[index("reports_status_idx").on(t.status, t.createdAt)]` 평가 결과를 반환한다.
+// 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
 export const reports = pgTable("reports", {
   id: uuid("id").primaryKey().defaultRandom(), reporterId: text("reporter_id").notNull().references(() => user.id),
   targetType: varchar("target_type", { length: 40 }).notNull(), targetId: text("target_id").notNull(), reason: text("reason").notNull(),
   status: reportStatus("status").notNull().default("OPEN"), createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("reports_status_idx").on(t.status, t.createdAt)]);
-// 기능 `콜백`(): `user.id` 평가 결과를 반환한다.
-// 기능 `콜백`(t): `[index("audit_created_idx").on(t.createdAt)]` 평가 결과를 반환한다.
+// 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
 export const auditLogs = pgTable("audit_logs", {
   id: uuid("id").primaryKey().defaultRandom(), actorId: text("actor_id").references(() => user.id), action: varchar("action", { length: 100 }).notNull(),
   entityType: varchar("entity_type", { length: 50 }).notNull(), entityId: text("entity_id").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("audit_created_idx").on(t.createdAt)]);
 
-// A media asset may be attached to exactly one post, avoiding cross-post disclosure.
-// 기능 `콜백`(): `mediaAssets.id` 평가 결과를 반환한다.
-// 기능 `콜백`(): `marketPosts.id` 평가 결과를 반환한다.
-// 기능 `콜백`(): `finderPosts.id` 평가 결과를 반환한다.
-// 기능 `콜백`(t): `[check("post_media_exactly_one_post", sql`(${t.marketPostId} IS NOT NULL)::integer + (${t.finderPostId} IS NOT NULL)::integer = 1`), index("post_media_market_idx").on(t.marketPostId), index("post_media_finder_idx").on(t.finderPostId)]` 평가 결과를 반환한다.
+// 이미지 하나는 최대 한 글에만 연결한다. 다른 글에 같은 이미지가 잘못 노출되는 것을 막는다.
+// 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
 export const postMedia = pgTable("post_media", {
   mediaId: uuid("media_id").primaryKey().references(() => mediaAssets.id, { onDelete: "cascade" }),
   marketPostId: uuid("market_post_id").references(() => marketPosts.id, { onDelete: "cascade" }),

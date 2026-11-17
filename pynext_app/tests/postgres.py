@@ -1,6 +1,4 @@
-# 제출용 기능·분기 설명: 조건식은 실제 코드의 평가 순서와 반환값을 기준으로 읽는다.
-# 표현식·화면 분기 목록 (같은 조건이 다른 함수에서 반복될 수 있음):
-# - 컴프리헨션: `('PATH', 'HOME', 'LD_LIBRARY_PATH')`의 각 `key`를 순회한다. `key in os.environ`가 참인 항목만 포함한다.
+# 이 파일은 관련 기능을 실행하기 위한 코드와 설정을 모아 둔다.
 """Run the complete domain/concurrency suite on disposable PostgreSQL 17."""
 import os
 from pathlib import Path
@@ -13,24 +11,25 @@ import psycopg
 APP = Path(__file__).resolve().parents[1]
 
 
-# 기능 `main`: With 구문으로 이어지는 내부 처리를 실행한다.
+# 프로그램을 시작하고 실행 옵션에 맞는 작업을 진행한다.
 def main():
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
         port = sock.getsockname()[1]
     name = f"gwg-pynext-regression-{os.getpid()}"
     url = f"postgresql://gwg:test-only@127.0.0.1:{port}/gwg_pynext_tests"
+    # 현재 실행 환경에 실제로 있는 설정만 시험 서버로 복사한다.
     env = {key: os.environ[key] for key in ("PATH", "HOME", "LD_LIBRARY_PATH") if key in os.environ}
     env.update(PYTHONPATH=str(APP), DJANGO_DEBUG="1", DJANGO_DATABASE_URL=url)
-    # 예외 경계: 본문을 시도하고 . 성공·실패와 관계없이 마지막에 먼저 `subprocess.run(['docker', 'stop', name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)`를 실행한다.
+    # 아래 작업을 시도하고, 오류가 나면 except에 적힌 방법으로 처리한다. 성공하거나 실패해도 finally의 정리 작업은 실행한다.
     try:
         subprocess.run(["docker", "run", "-d", "--rm", "--name", name,
                         "-e", "POSTGRES_USER=gwg", "-e", "POSTGRES_PASSWORD=test-only",
                         "-e", "POSTGRES_DB=gwg_pynext_tests", "-p", f"127.0.0.1:{port}:5432", "postgres:17"],
                        check=True, stdout=subprocess.DEVNULL)
-        # 반복 `range(150)`: 각 항목을 `_`에 담아 Try 구문으로 이어지는 내부 처리를 실행한다. 항목이 없으면 본문을 건너뛴다. 정상 소진 시 RuntimeError('Test PostgreSQL not ready') 예외를 발생시킨다.
+        # 정해 둔 횟수만큼 시도하거나 측정을 반복한다.
         for _ in range(150):
-            # 예외 경계: 본문을 시도하고 `psycopg.OperationalError` 발생 시 먼저 `time.sleep(0.2)`를 실행한다.
+            # 아래 작업을 시도하고, 오류가 나면 except에 적힌 방법으로 처리한다.
             try:
                 with psycopg.connect(url):
                     break
@@ -44,6 +43,6 @@ def main():
         subprocess.run(["docker", "stop", name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
-# 조건 분기 `__name__ == '__main__'`: 참이면 먼저 `main()`를 실행한다. 거짓이면 이 블록을 건너뛰고 이후 코드로 진행한다.
+# 다른 파일에서 불러올 때는 실행하지 않고, 이 파일을 직접 실행할 때만 아래 시작 코드를 실행한다.
 if __name__ == "__main__":
     main()

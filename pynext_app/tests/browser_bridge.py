@@ -1,4 +1,4 @@
-# 제출용 기능·분기 설명: 조건식은 실제 코드의 평가 순서와 반환값을 기준으로 읽는다.
+# 이 파일은 관련 기능을 실행하기 위한 코드와 설정을 모아 둔다.
 """Compatibility entry point for the PyNext browser story."""
 import runpy
 from pathlib import Path

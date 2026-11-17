@@ -1,20 +1,33 @@
-# Local development database. The production compose must not publish the DB port.
-# 개발 DB 포트는 루프백에만 노출하며 운영 DB 설정과 분리한다.
+# 함께 실행할 앱과 데이터베이스를 아래에 정한다.
 services:
+  # 회원·게시글 정보를 저장할 데이터베이스의 실행 설정이다.
   db:
+    # 이미 만들어진 Docker 이미지와 버전을 선택한다.
     image: postgres:17
+    # 이 프로그램에 전달할 설정값을 아래에 적는다.
     environment:
+      # 처음 만들 데이터베이스 이름이다.
       POSTGRES_DB: gwg
+      # 테스트 또는 개발용 데이터베이스에 만들 계정 이름이다.
       POSTGRES_USER: gwg
+      # 아래 데이터베이스 계정의 비밀번호다. 예제의 값은 운영에 사용하지 않는다.
       POSTGRES_PASSWORD: local-dev-only
+    # 컴퓨터의 포트와 컨테이너 안의 포트를 연결한다. 127.0.0.1은 같은 컴퓨터에서만 접속할 수 있다.
     ports:
       - "127.0.0.1:5433:5432"
+    # 컨테이너를 바꾸어도 남겨야 할 데이터의 저장 위치다.
     volumes:
       - gwg-dev-db:/var/lib/postgresql/data
+    # 서버나 데이터베이스가 정상적으로 응답하는지 주기적으로 확인한다.
     healthcheck:
+      # 아래 명령이 성공하면 정상적으로 동작한다고 판단한다.
       test: ["CMD-SHELL", "pg_isready -U gwg -d gwg"]
+      # 상태를 확인하는 시간 간격이다.
       interval: 5s
+      # 한 번 확인할 때 응답을 기다릴 최대 시간이다.
       timeout: 3s
+      # 상태 확인이 연속으로 몇 번 실패하면 비정상으로 볼지 정한다.
       retries: 12
+# 컨테이너를 바꾸어도 남겨야 할 데이터의 저장 위치다.
 volumes:
   gwg-dev-db:

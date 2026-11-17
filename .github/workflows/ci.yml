@@ -1,57 +1,92 @@
 name: PyNext CI
 on: [push, pull_request]
+# 자동 검사에 허용할 GitHub 접근 권한이다.
 permissions:
+  # 저장소 내용을 읽는 권한만 허용한다.
   contents: read
+# 자동으로 실행할 검사 작업을 아래에 정의한다.
 jobs:
   pynext:
+    # 검사를 실행할 컴퓨터의 운영체제다.
     runs-on: ubuntu-latest
+    # 아래 검사 명령들에 공통으로 사용할 기본 설정이다.
     defaults:
+      # 아래 셸 명령을 실행해 이 검사 단계의 작업을 처리한다.
       run:
+        # 명령을 실행할 폴더다.
         working-directory: pynext_app
+    # 함께 실행할 앱과 데이터베이스를 아래에 정한다.
     services:
       postgres:
+        # 이미 만들어진 Docker 이미지와 버전을 선택한다.
         image: postgres:17
         env:
+          # 테스트 또는 개발용 데이터베이스에 만들 계정 이름이다.
           POSTGRES_USER: gwg
+          # 아래 데이터베이스 계정의 비밀번호다. 예제의 값은 운영에 사용하지 않는다.
           POSTGRES_PASSWORD: test-only
+          # 처음 만들 데이터베이스 이름이다.
           POSTGRES_DB: gwg_python_ci
+        # 컴퓨터의 포트와 컨테이너 안의 포트를 연결한다. 127.0.0.1은 같은 컴퓨터에서만 접속할 수 있다.
         ports: ['5432:5432']
         options: >-
           --health-cmd "pg_isready -U gwg -d gwg_python_ci"
           --health-interval 5s --health-timeout 5s --health-retries 10
     env:
+      # 개발 중 오류 화면을 보여 줄지 정한다. 실제 서비스에서는 0으로 둔다.
       DJANGO_DEBUG: '1'
+      # 회원·게시글 등을 저장할 PostgreSQL 데이터베이스의 연결 주소다.
       DJANGO_DATABASE_URL: postgresql://gwg:test-only@127.0.0.1:5432/gwg_python_ci
       DJANGO_TEST_DATABASE_NAME: test_gwg_python_ci
+      # 로그인 정보와 확인 링크가 위조되지 않도록 지키는 서버 전용 비밀값이다.
       DJANGO_SECRET_KEY: ci-only-secret-not-used-in-production-0123456789-abcdefghijk
+      # 초대 코드 원문 대신 비교용 값을 만들 때 쓰는 비밀값이다.
       DJANGO_INVITATION_SECRET: ci-only-invitation-secret-not-used-in-production
+    # 위에서 아래 순서대로 검사 준비와 실행을 진행한다.
     steps:
+      # 검사할 저장소의 소스 파일을 내려받는다.
       - uses: actions/checkout@v4
+      # 검사 컴퓨터에 사용할 Python 버전을 준비한다.
       - uses: actions/setup-python@v5
         with:
           python-version: '3.14'
           cache: pip
           cache-dependency-path: pynext_app/requirements*.txt
+      # 테스트에 필요한 Python 도구를 설치한다.
       - run: python -m pip install -r requirements-test.txt
+      # Django 설정과 모델에 잘못된 부분이 없는지 기본 검사한다.
       - run: python manage.py check
+      # 모델 변경이 데이터베이스 변경 파일에 빠지지 않았는지 확인한다. 실제 데이터는 바꾸지 않는다.
       - run: python manage.py makemigrations --check --dry-run
+      # CSS 등 화면에서 사용할 공통 파일을 한곳에 모은다.
       - run: python manage.py collectstatic --noinput
       - name: Production settings checks
+        # 운영 서버에서 필요한 보호 설정이 준비됐는지 검사한다.
         run: python manage.py check --deploy --fail-level WARNING
         env:
+          # 개발 중 오류 화면을 보여 줄지 정한다. 실제 서비스에서는 0으로 둔다.
           DJANGO_DEBUG: '0'
+          # 이 서버로 접속을 허용할 도메인 이름을 적는다.
           DJANGO_ALLOWED_HOSTS: localhost,community.example.com
+          # 켜면 암호화되지 않은 HTTP 접속을 HTTPS로 보낸다.
           DJANGO_SECURE_SSL_REDIRECT: '1'
+          # 브라우저가 앞으로 HTTPS로만 접속하도록 기억할 시간을 초 단위로 정한다.
           DJANGO_HSTS_SECONDS: '31536000'
           DJANGO_HSTS_INCLUDE_SUBDOMAINS: '1'
           DJANGO_HSTS_PRELOAD: '1'
+      # 기존 자동 테스트를 실행해 예상한 결과가 나오는지 확인한다.
       - run: python manage.py test --verbosity 2
       - name: SQLite tests
+        # 기존 자동 테스트를 실행해 예상한 결과가 나오는지 확인한다.
         run: python manage.py test --verbosity 1
         env:
+          # 회원·게시글 등을 저장할 PostgreSQL 데이터베이스의 연결 주소다.
           DJANGO_DATABASE_URL: ''
       - name: PyNext routes and HTTP contracts on isolated SQLite
+        # 별도 테스트 서버로 요청을 보내 기존 API 규칙대로 응답하는지 확인한다.
         run: python tests/http_parity.py
+      # 실제 화면 테스트에 사용할 Chromium 브라우저를 준비한다.
       - run: python -m playwright install --with-deps chromium
       - name: Browser story on isolated PyNext
+        # 브라우저로 가입·게시글 등 주요 화면 흐름을 검사한다.
         run: python tests/browser.py

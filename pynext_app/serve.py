@@ -1,4 +1,4 @@
-# 제출용 기능·분기 설명: 조건식은 실제 코드의 평가 순서와 반환값을 기준으로 읽는다.
+# 이 파일은 관련 기능을 실행하기 위한 코드와 설정을 모아 둔다.
 """Start the production PyNext application on Uvicorn."""
 import argparse
 from pathlib import Path
@@ -6,7 +6,7 @@ import sys
 import uvicorn
 
 # 프록시 헤더 자동 해석을 끄고 수명주기와 워커 제한을 명시해 서버를 기동한다.
-# 조건 분기 `__name__ == '__main__'`: 참이면 먼저 `parser = argparse.ArgumentParser()`로 상태 또는 조회 조건을 갱신한다. 거짓이면 이 블록을 건너뛰고 이후 코드로 진행한다.
+# 다른 파일에서 불러올 때는 실행하지 않고, 이 파일을 직접 실행할 때만 아래 시작 코드를 실행한다.
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", default="127.0.0.1")

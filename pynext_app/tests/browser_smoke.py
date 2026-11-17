@@ -1,12 +1,9 @@
-# 제출용 기능·분기 설명: 조건식은 실제 코드의 평가 순서와 반환값을 기준으로 읽는다.
-# 표현식·화면 분기 목록 (같은 조건이 다른 함수에서 반복될 수 있음):
-# - 단락 평가 `os.environ.get('GWG_BROWSER_TEST') != '1' or os.environ.get('DJANGO_DATABASE_URL') or (not os.environ.get('DJANGO_SQLITE_PATH'))`: 왼쪽 값이 참이면 남은 항을 평가하지 않고 그 값을 사용한다.
-# - 단락 평가 `User.objects.exists() or Club.objects.exists()`: 왼쪽 값이 참이면 남은 항을 평가하지 않고 그 값을 사용한다.
+# 이 파일은 관련 기능을 실행하기 위한 코드와 설정을 모아 둔다.
 import os, sys, io
 from datetime import timedelta
 from pathlib import Path
 from playwright.sync_api import sync_playwright
-# 조건 분기 `os.environ.get('GWG_BROWSER_TEST') != '1' or os.environ.get('DJANGO_DATABASE_URL') or (not os.environ.get('DJANGO_SQLITE_PATH'))`: 참이면 SystemExit('Use GWG_BROWSER_TEST=1 and an explicit isolated SQLite path; PostgreSQL is refused.') 예외를 발생시킨다. 거짓이면 이 블록을 건너뛰고 이후 코드로 진행한다.
+# 브라우저 시험 모드와 별도 SQLite 경로가 확인되지 않으면 실행하지 않는다. 실수로 운영 DB를 건드리지 않게 한다.
 if os.environ.get('GWG_BROWSER_TEST') != '1' or os.environ.get('DJANGO_DATABASE_URL') or not os.environ.get('DJANGO_SQLITE_PATH'):
     raise SystemExit('Use GWG_BROWSER_TEST=1 and an explicit isolated SQLite path; PostgreSQL is refused.')
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
@@ -19,7 +16,7 @@ from django.utils import timezone
 from django.core import signing
 from core.models import User, Club, Recruitment, MediaAsset, FinderPost, MarketPost, Report
 from core.services import issue_invitation
-# 조건 분기 `User.objects.exists() or Club.objects.exists()`: 참이면 SystemExit('Browser fixture requires an empty test database.') 예외를 발생시킨다. 거짓이면 이 블록을 건너뛰고 이후 코드로 진행한다.
+# 이미 데이터가 있는 환경에서는 시험 자료를 덧씌우지 않도록 중단한다.
 if User.objects.exists() or Club.objects.exists():
     raise SystemExit('Browser fixture requires an empty test database.')
 admin = User.objects.create_user(username='admin', email='admin@example.test', password='test-admin-password', is_superuser=True, email_verified=True, student_active=True)
@@ -81,7 +78,6 @@ with sync_playwright() as p:
     page.locator('[name=answer]').fill('활동하고 싶습니다')
     page.get_by_role('button',name='지원',exact=True).click()
     assert '지원서가 제출되었습니다' in page.content()
-    # A second browser context exercises a real independent admin session.
     admin_context = browser.new_context()
     admin_page = admin_context.new_page()
     admin_page.goto(base+'/auth/login/')

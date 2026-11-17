@@ -1,12 +1,4 @@
-# 제출용 기능·분기 설명: 조건식은 실제 코드의 평가 순서와 반환값을 기준으로 읽는다.
-# 표현식·화면 분기 목록 (같은 조건이 다른 함수에서 반복될 수 있음):
-# - 조건식 `'?' in path`: 참일 때 `'`/api/market` 검색·가격·2페이지'`, 거짓일 때 `f'`{path}`'`를 선택한다.
-# - 컴프리헨션: `runs`의 각 `row`를 순회한다. `row['path'] == path and row['engine'] == engine and (row['concurrency'] == concurrency)`가 참인 항목만 포함한다.
-# - 컴프리헨션: `runs`의 각 `row`를 순회한다.
-# - 단락 평가 `row['path'] == path and row['engine'] == engine and (row['concurrency'] == concurrency)`: 왼쪽 값이 거짓이면 남은 항을 평가하지 않고 그 값을 사용한다.
-# - 컴프리헨션: `rows(path, engine, concurrency)`의 각 `row`를 순회한다.
-# - 컴프리헨션: `runs`의 각 `row`를 순회한다.
-# - 컴프리헨션: `runs`의 각 `row`를 순회한다.
+# 이 파일은 관련 기능을 실행하기 위한 코드와 설정을 모아 둔다.
 """Render a reviewable report from the stored benchmark measurements."""
 import json
 from pathlib import Path
@@ -18,18 +10,20 @@ runs = data["runs"]
 paths = list(dict.fromkeys(row["path"] for row in runs))
 
 
-# 기능 `rows`: [row for row in runs if row['path'] == path and row['engine'] == engine and (row['concurrency'] == concurrency)]을 반환한다.
+# 비교하거나 옮길 데이터를 하나씩 읽는다.
 def rows(path, engine, concurrency):
+    # 목록에서 필요한 조건에 맞는 항목만 골라 결과에 넣는다.
     return [row for row in runs if row["path"] == path and row["engine"] == engine and row["concurrency"] == concurrency]
 
 
-# 기능 `median`: statistics.median((row[key] for row in rows(path, engine, concurrency)))을 반환한다.
+# 측정 값을 정렬해 가운데 값을 구한다. 평균과 달리 유난히 크거나 작은 값의 영향을 덜 받는다.
 def median(path, engine, concurrency, key):
     return statistics.median(row[key] for row in rows(path, engine, concurrency))
 
 
-# 기능 `label`: '`/api/market` 검색·가격·2페이지' if '?' in path else f'`{path}`'을 반환한다.
+# 측정 결과 표에 표시할 시험 이름을 정한다.
 def label(path):
+    # 검색 조건이 붙은 주소는 알아보기 쉬운 시험 이름으로 표시한다.
     return "`/api/market` 검색·가격·2페이지" if "?" in path else f"`{path}`"
 
 
@@ -49,12 +43,12 @@ lines = ["# Next.js 대 PyNext 부하 테스트 — 2026-11-15", "",
          "Clubs의 20개 ID·목록 필드는 일치하지만 Next.js의 recruiting은 20개 모두 false, PyNext는 true였다.",
          '기존 Drizzle 쿼리가 `r.club_id = "id"`를 생성하여 외부 clubs.id 대신 모집 공고 자신의 id와 비교하는 것을 확인했다.',
          "기존 Next.js 비교 코드는 변경하지 않았다. 이 계산 필드 차이를 원시 JSON의 parity에 기록했다.", ""]
-# 반복 `(1, 8, 32)`: 각 항목을 `concurrency`에 담아 먼저 `lines += [f'## 동시 요청 {concurrency}개', '', '| 경로 | Next.js req/s | PyNext req/s | PyNext/Next.js | Next.js p95 ms | PyNext p95 ms |', '|---|---:|---:|---:|---:|---:|']`로 상태 또는 조회 조건을 갱신한다. 항목이 없으면 본문을 건너뛴다.
+# 준비한 목록을 하나씩 읽어 아래 작업을 반복한다. 목록이 비어 있으면 건너뛴다.
 for concurrency in (1, 8, 32):
     lines += [f"## 동시 요청 {concurrency}개", "",
               "| 경로 | Next.js req/s | PyNext req/s | PyNext/Next.js | Next.js p95 ms | PyNext p95 ms |",
               "|---|---:|---:|---:|---:|---:|"]
-    # 반복 `paths`: 각 항목을 `path`에 담아 먼저 `next_rps = median(path, 'nextjs', concurrency, 'requests_per_second')`로 상태 또는 조회 조건을 갱신한다. 항목이 없으면 본문을 건너뛴다.
+    # 준비한 목록을 하나씩 읽어 아래 작업을 반복한다. 목록이 비어 있으면 건너뛴다.
     for path in paths:
         next_rps = median(path, "nextjs", concurrency, "requests_per_second")
         py_rps = median(path, "pynext", concurrency, "requests_per_second")
@@ -64,7 +58,7 @@ lines += ["## 자원 사용 — 동시 요청 32개", "",
           "CPU 100%는 논리 코어 하나를 의미한다. RSS는 각 측정 구간에서 관찰한 최고값의 중앙값이다.", "",
           "| 경로 | Next.js CPU % | PyNext CPU % | Next.js RSS MiB | PyNext RSS MiB |",
           "|---|---:|---:|---:|---:|"]
-# 반복 `paths`: 각 항목을 `path`에 담아 먼저 `lines.append(f"| {label(path)} | {median(path, 'nextjs', 32, 'cpu_percent_one_core'):.2f} | {median(path, 'pynext', 32, 'cpu_percent_one_core'):.2f} | {median(path, 'nextjs', 32, 'peak_rss_mib'):.2f} | {median(path, 'pynext', 32, 'peak_rss_mib'):.2f} |")`를 실행한다. 항목이 없으면 본문을 건너뛴다.
+# 준비한 목록을 하나씩 읽어 아래 작업을 반복한다. 목록이 비어 있으면 건너뛴다.
 for path in paths:
     lines.append(f"| {label(path)} | {median(path, 'nextjs', 32, 'cpu_percent_one_core'):.2f} | {median(path, 'pynext', 32, 'cpu_percent_one_core'):.2f} | {median(path, 'nextjs', 32, 'peak_rss_mib'):.2f} | {median(path, 'pynext', 32, 'peak_rss_mib'):.2f} |")
 lines += ["", "## 해석과 한계", "",

@@ -1,144 +1,81 @@
-# 제출용 기능·분기 설명: 조건식은 실제 코드의 평가 순서와 반환값을 기준으로 읽는다.
-# 표현식·화면 분기 목록 (같은 조건이 다른 함수에서 반복될 수 있음):
-# - 화면 템플릿 `for application in applications`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `empty `: 목록이 비었을 때 안내 화면을 출력한다.
-# - 화면 템플릿 `if user.is_superuser`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `if user.is_authenticated`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `else `: 앞선 조건이 모두 거짓일 때 대체 화면을 출력한다.
-# - 화면 템플릿 `if user.is_authenticated`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `else `: 앞선 조건이 모두 거짓일 때 대체 화면을 출력한다.
-# - 화면 템플릿 `if messages`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `for message in messages`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `if can_manage`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `for post in posts`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `empty `: 목록이 비었을 때 안내 화면을 출력한다.
-# - 화면 템플릿 `for recruitment in recruitments`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `empty `: 목록이 비었을 때 안내 화면을 출력한다.
-# - 화면 템플릿 `for recruitment in club.recruitments.all`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `empty `: 목록이 비었을 때 안내 화면을 출력한다.
-# - 화면 템플릿 `if user.is_superuser`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `for category in categories`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `if request.GET.category == category`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `if request.GET.recruiting == \'1\'`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `for club in clubs`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `empty `: 목록이 비었을 때 안내 화면을 출력한다.
-# - 화면 템플릿 `if request.GET.kind == \'lost\'`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `if request.GET.kind == \'found\'`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `for post in posts`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `empty `: 목록이 비었을 때 안내 화면을 출력한다.
-# - 화면 템플릿 `for image in post.images.all`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `if image.moderation == \'APPROVED\' or user.id == post.owner_id or user.is_superuser`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `if user.id == post.owner_id`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `elif user.is_authenticated`: 앞선 조건이 거짓이고 이 조건이 참이면 출력한다.
-# - 화면 템플릿 `if title == "물품 등록" or title == "분실·습득물 등록"`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `for club in clubs`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `for account in accounts`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `if account.is_active`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `else `: 앞선 조건이 모두 거짓일 때 대체 화면을 출력한다.
-# - 화면 템플릿 `if account.pk != user.pk`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `if account.is_active`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `else `: 앞선 조건이 모두 거짓일 때 대체 화면을 출력한다.
-# - 화면 템플릿 `for invitation in invitations`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `if invitation.redeemed_at`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `elif invitation.revoked_at`: 앞선 조건이 거짓이고 이 조건이 참이면 출력한다.
-# - 화면 템플릿 `else `: 앞선 조건이 모두 거짓일 때 대체 화면을 출력한다.
-# - 화면 템플릿 `if not invitation.redeemed_at and not invitation.revoked_at`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `empty `: 목록이 비었을 때 안내 화면을 출력한다.
-# - 화면 템플릿 `for post in pending_posts`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `empty `: 목록이 비었을 때 안내 화면을 출력한다.
-# - 화면 템플릿 `for image in pending_media`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `empty `: 목록이 비었을 때 안내 화면을 출력한다.
-# - 화면 템플릿 `for report in reports`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `empty `: 목록이 비었을 때 안내 화면을 출력한다.
-# - 화면 템플릿 `for category in categories`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `if request.GET.category == category`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `if request.GET.status == \'AVAILABLE\'`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `if request.GET.status == \'RESERVED\'`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `if request.GET.status == \'COMPLETED\'`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `for post in posts`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `empty `: 목록이 비었을 때 안내 화면을 출력한다.
-# - 화면 템플릿 `for image in post.images.all`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `if image.moderation == \'APPROVED\' or user.id == post.owner_id or user.is_superuser`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `if user.is_authenticated and user.is_active and user.email_verified and user.student_active`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `else `: 앞선 조건이 모두 거짓일 때 대체 화면을 출력한다.
-# - 화면 템플릿 `if user.is_authenticated and user.email_verified and user.student_active`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `if post.owner_id == user.id`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `if post.status == \'AVAILABLE\'`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `else `: 앞선 조건이 모두 거짓일 때 대체 화면을 출력한다.
-# - 화면 템플릿 `if post.status == \'AVAILABLE\'`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `if may_cancel`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `if post.owner_id == user.id`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `for score, post in matches`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `empty `: 목록이 비었을 때 안내 화면을 출력한다.
-# - 화면 템플릿 `if not user.student_active`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `for post in market_posts`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `empty `: 목록이 비었을 때 안내 화면을 출력한다.
-# - 화면 템플릿 `for reservation in reservations`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `empty `: 목록이 비었을 때 안내 화면을 출력한다.
-# - 화면 템플릿 `for post in finder_posts`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `if post.status == \'ACTIVE\'`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `empty `: 목록이 비었을 때 안내 화면을 출력한다.
-# - 화면 템플릿 `for membership in managed_clubs`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `empty `: 목록이 비었을 때 안내 화면을 출력한다.
-# - 화면 템플릿 `for application in applications`: 목록의 각 항목에 대응하는 화면을 출력한다.
-# - 화면 템플릿 `empty `: 목록이 비었을 때 안내 화면을 출력한다.
-# - 화면 템플릿 `if page.paginator.num_pages > 1`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `if page.has_previous`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `if page.has_next`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `if validlink`: 조건을 만족할 때 해당 화면 조각을 출력한다.
-# - 화면 템플릿 `else `: 앞선 조건이 모두 거짓일 때 대체 화면을 출력한다.
+# 이 파일은 화면에 사용할 HTML 틀을 보관한다.
 """Python-owned Django template and stylesheet source."""
 
 # 렌더링 동작을 바꾸지 않도록 각 템플릿 문자열 밖에 역할을 설명한다.
 TEMPLATE_SOURCES = {
     # 비밀번호 재설정 메일 제목.
+    # 비밀번호 재설정 메일의 제목을 정한다.
     'registration/password_reset_subject.txt': 'GwgCommunity 비밀번호 재설정',
     # 운영자용 지원 목록과 상태 변경 양식.
+    # 지원서를 한 건씩 보여 주며 답변과 검토·합격·거절 버튼을 표시한다. 지원서가 없으면 빈 목록 안내를 보여 준다.
     'applications.html': '{% extends \'base.html\' %}{% block content %}<div class="content-shell"><h1>{{ club.name }} 지원서</h1>{% for application in applications %}<div class="card"><p>{{ application.applicant.first_name|default:application.applicant.username }} · {{ application.recruitment.title }} · {{ application.get_status_display }}</p><p>{{ application.answers.answer }}</p><form method="post" action="{% url \'club-application-status\' club.slug application.pk %}">{% csrf_token %}<button name="status" value="IN_REVIEW">검토</button><button name="status" value="ACCEPTED">승인</button><button name="status" value="REJECTED">거절</button></form></div>{% empty %}<p>지원서가 없습니다.</p>{% endfor %}</div>{% endblock %}\n',
     # 공통 내비게이션, 로그인 상태, 메시지와 본문 블록.
+    # 로그인한 사람에게는 로그아웃을, 그 외에는 로그인·가입 링크를 보여 준다. 관리자에게만 관리 메뉴를 보여 주고, 알림이 있으면 하나씩 출력한다.
     'base.html': '{% load static %}<!doctype html>\n<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="학생이 만드는 학교생활 커뮤니티"><title>{% block title %}GwgCommunity | 학생이 만드는 학교생활 커뮤니티{% endblock %}</title><link rel="stylesheet" href="{% static \'core/site.css\' %}"></head>\n<body><a class="skip-link" href="#main-content">본문으로 바로가기</a><header class="site-header"><div class="header-inner"><a class="brand" href="/"><span class="brand-mark">G</span><span>GwgCommunity</span></a><nav class="desktop-nav" aria-label="주 메뉴"><a href="{% url \'market\' %}">Market</a><a href="{% url \'clubs\' %}">Clubs</a><a href="{% url \'finder\' %}">Finder</a><a href="{% url \'me\' %}">마이페이지</a>{% if user.is_superuser %}<a href="{% url \'management\' %}">관리자</a>{% endif %}</nav>{% if user.is_authenticated %}<form class="header-login-form" method="post" action="{% url \'logout\' %}">{% csrf_token %}<button class="header-login">로그아웃</button></form>{% else %}<a class="header-login" href="{% url \'login\' %}">로그인</a>{% endif %}<details class="mobile-navigation"><summary class="mobile-menu-toggle">메뉴 ☰</summary><nav class="mobile-menu" aria-label="모바일 메뉴"><a href="{% url \'market\' %}">Market</a><a href="{% url \'clubs\' %}">Clubs</a><a href="{% url \'finder\' %}">Finder</a><a href="{% url \'me\' %}">마이페이지</a>{% if user.is_authenticated %}<form method="post" action="{% url \'logout\' %}">{% csrf_token %}<button>로그아웃</button></form>{% else %}<a href="{% url \'login\' %}">로그인</a><a href="{% url \'register\' %}">회원가입</a>{% endif %}</nav></details></div></header>\n<main id="main-content" tabindex="-1">{% if messages %}<div class="page-shell">{% for message in messages %}<p class="notice" role="status">{{ message }}</p>{% endfor %}</div>{% endif %}{% block content %}{% endblock %}</main><footer class="site-footer"><div><strong>GwgCommunity</strong><p>학생이 만들고 학생이 사용하는 비공식 학교생활 커뮤니티</p></div><span>© 2026 GwgCommunity</span></footer></body></html>\n',
     # 동아리 활동·모집 목록과 지원 양식.
+    # 관리 권한이 있을 때만 관리 링크를 보여 준다. 활동 글과 모집 공고를 하나씩 표시하고, 없으면 안내 문구를 보여 준다.
     'club_detail.html': '{% extends \'base.html\' %}{% block content %}<div class="content-shell"><h1>{{ club.name }}</h1>{% if can_manage %}<a href="{% url \'club-manage\' club.slug %}">동아리 관리</a>{% endif %}<p>{{ club.introduction|linebreaksbr }}</p><h2>활동</h2>{% for post in posts %}<h3>{{ post.title }}</h3><p>{{ post.content|linebreaksbr }}</p>{% empty %}<p>공개 활동이 없습니다.</p>{% endfor %}<h2>모집</h2>{% for recruitment in recruitments %}<h3>{{ recruitment.title }}</h3><p>{{ recruitment.description }}</p><form method="post" action="{% url \'club-apply\' recruitment.pk %}">{% csrf_token %}<label for="answer-{{ recruitment.pk }}">지원 내용</label><textarea id="answer-{{ recruitment.pk }}" name="answer" required maxlength="3000"></textarea><button>지원</button></form>{% empty %}<p>진행 중인 모집이 없습니다.</p>{% endfor %}</div>{% endblock %}\n',
     # 동아리 편집, 모집 관리와 관리자용 역할 지정.
+    # 등록한 모집을 하나씩 보여 주고 없으면 안내한다. 동아리 역할을 지정하는 입력란은 전체 관리자에게만 보여 준다.
     'club_manage.html': '{% extends \'base.html\' %}{% block content %}<div class="content-shell"><h1>{{ club.name }} 관리</h1><p><a href="{% url \'club-applications\' club.slug %}">지원서 보기</a> · <a href="{% url \'club-add-content\' club.slug \'post\' %}">활동 등록</a> · <a href="{% url \'club-add-content\' club.slug \'recruitment\' %}">모집 등록</a></p><form method="post">{% csrf_token %}{{ form.as_p }}<button>저장</button></form><h2>모집 공고</h2>{% for recruitment in club.recruitments.all %}<p>{{ recruitment.title }} · <a href="{% url \'club-edit-recruitment\' club.slug recruitment.pk %}">수정</a></p>{% empty %}<p>등록된 모집 공고가 없습니다.</p>{% endfor %}{% if user.is_superuser %}<h2>동아리 운영자 지정</h2><form method="post" action="{% url \'admin-club-member\' club.slug %}">{% csrf_token %}<label for="username">닉네임</label><input id="username" name="username" required><label for="role">역할</label><select id="role" name="role"><option value="manager">운영자</option><option value="owner">대표</option><option value="member">회원</option></select><button>변경</button></form>{% endif %}</div>{% endblock %}\n',
     # 공개 동아리 검색·모집 필터와 페이지 이동.
+    # 선택한 분류와 모집 중 조건을 입력란에 유지한다. 검색 결과를 카드로 하나씩 보여 주고 결과가 없으면 안내한다.
     'clubs.html': '{% extends \'base.html\' %}{% block content %}<div class="content-shell"><p class="eyebrow">GWG CLUBS</p><h1>관심사가 만나는 곳</h1><p>동아리의 활동을 발견하고 함께하세요.</p><form class="filter-form" method="get"><p><label for="q">동아리 검색</label><input id="q" name="q" type="search" value="{{ q }}"></p><p><label for="category">분류</label><select id="category" name="category"><option value="">전체</option>{% for category in categories %}<option value="{{ category }}" {% if request.GET.category == category %}selected{% endif %}>{{ category }}</option>{% endfor %}</select></p><p><label><input type="checkbox" name="recruiting" value="1" {% if request.GET.recruiting == \'1\' %}checked{% endif %}> 모집 중만 보기</label></p><button>검색</button></form><div class="cards">{% for club in clubs %}<a class="card" href="{% url \'club-detail\' club.slug %}"><h2>{{ club.name }}</h2><p>{{ club.category }}</p><p>{{ club.introduction|truncatechars:90 }}</p></a>{% empty %}<p>조건에 맞는 동아리가 없습니다.</p>{% endfor %}</div>{% include \'pagination.html\' %}</div>{% endblock %}\n',
     # 분실·습득 검색 조건과 목록.
+    # 분실·습득 종류와 검색 조건을 유지한다. 결과 글을 하나씩 보여 주고 결과가 없으면 안내한다.
     'finder.html': '{% extends \'base.html\' %}{% block content %}<div class="content-shell"><p class="eyebrow">GWG FINDER</p><h1>잃어버린 물건을 찾아요</h1><p>대략적인 장소만 공개하고 소유권은 별도로 확인해요.</p><p><a class="button button-dark" href="{% url \'finder-new\' %}">분실·습득물 등록 ↗</a></p><form class="filter-form" method="get"><p><label for="q">검색</label><input id="q" name="q" value="{{ q }}"></p><p><label for="kind">유형</label><select id="kind" name="kind"><option value="">전체</option><option value="lost" {% if request.GET.kind == \'lost\' %}selected{% endif %}>분실</option><option value="found" {% if request.GET.kind == \'found\' %}selected{% endif %}>습득</option></select></p><p><label for="category">분류</label><input id="category" name="category" value="{{ request.GET.category }}"></p><p><label for="color">색상</label><input id="color" name="color" value="{{ request.GET.color }}"></p><button>검색</button></form><div class="cards">{% for post in posts %}<a class="card" href="{% url \'finder-detail\' post.pk %}"><h2>{{ post.title }}</h2><p>{{ post.get_kind_display }} · {{ post.category }} · {{ post.color }}</p><p>{{ post.general_location }} · {{ post.occurred_at }}</p></a>{% empty %}<p>조건에 맞는 게시물이 없습니다.</p>{% endfor %}</div>{% include \'pagination.html\' %}</div>{% endblock %}\n',
     # 게시물 이미지 노출 조건과 작성자 작업·신고 링크.
+    # 승인된 사진은 공개하고 승인 전 사진은 작성자·관리자에게만 보여 준다. 작성자에게는 수정·종료·삭제 버튼을, 다른 로그인 사용자에게는 신고 링크를 보여 준다.
     'finder_detail.html': '{% extends \'base.html\' %}{% block content %}<div class="content-shell"><p class="eyebrow">GWG FINDER / {{ post.get_kind_display }}</p><h1>{{ post.title }}</h1>{% for image in post.images.all %}{% if image.moderation == \'APPROVED\' or user.id == post.owner_id or user.is_superuser %}<img src="{% url \'image-read\' image.pk %}" alt="{{ post.title }} 사진" loading="lazy" style="max-width:100%;max-height:420px">{% endif %}{% endfor %}<p>{{ post.category }} · {{ post.color }}</p><p>{{ post.general_location }} · {{ post.occurred_at }}</p>{% if user.id == post.owner_id %}<p><a href="{% url \'finder-edit\' post.pk %}">수정</a> · <a href="{% url \'finder-matches\' post.pk %}">비슷한 글</a></p><form method="post" action="{% url \'finder-close\' post.pk %}">{% csrf_token %}<button>찾기 완료</button></form><form method="post" action="{% url \'finder-delete\' post.pk %}">{% csrf_token %}<button>삭제</button></form>{% elif user.is_authenticated %}<p><a href="{% url \'report-create\' %}?target_type=finder&amp;target_id={{ post.pk }}">신고하기</a></p>{% endif %}</div>{% endblock %}\n',
     # 공통 입력 양식과 일부 작성 화면의 다중 이미지 입력.
+    # 물품 등록 또는 분실·습득물 등록 화면에서만 최대 4장 사진 입력란을 보여 준다. 나머지 화면은 해당 폼만 보여 준다.
     'form.html': '{% extends \'base.html\' %}{% block content %}<div class="content-shell"><h1>{{ title }}</h1><form method="post" enctype="multipart/form-data">{% csrf_token %}{{ form.as_p }}{% if title == "물품 등록" or title == "분실·습득물 등록" %}<p><label for="images">사진 (최대 4장, 각 5MB)</label><input id="images" type="file" name="images" accept="image/jpeg,image/png,image/webp" multiple></p>{% endif %}<button>저장</button></form></div>{% endblock %}\n',
     # 서비스 소개와 주요 화면 링크.
+    # 거래·동아리·분실물 세 기능의 소개와 이동 링크를 보여 준다.
     'home.html': '{% extends \'base.html\' %}{% block content %}\n<section class="hero page-shell"><div class="hero-copy"><p class="eyebrow">GWANGDEOK HIGH SCHOOL / STUDENT COMMUNITY</p><h1>학교생활에 필요한<br>연결을 한 곳에서.</h1><p class="hero-description">거래하고, 활동을 발견하고, 잃어버린 물건을 찾는<br class="desktop-only"> 학생 중심 반개방형 커뮤니티입니다.</p><div class="hero-actions"><a class="button button-dark" href="{% url \'clubs\' %}">활동 둘러보기 <span aria-hidden="true">→</span></a><a class="text-link" href="{% url \'register\' %}">초대 코드로 시작하기 <span aria-hidden="true">↗</span></a></div></div><div class="hero-board" aria-hidden="true"><div class="hero-board-top"><span>GWG COMMUNITY</span><span>STUDENT MADE ↗</span></div><div class="hero-board-center"><div class="hero-board-orbit orbit-one"></div><div class="hero-board-orbit orbit-two"></div><div class="hero-board-symbol symbol-market">M</div><div class="hero-board-symbol symbol-clubs">C</div><div class="hero-board-symbol symbol-finder">F</div><div class="hero-board-center-label">G<span>W</span>G</div></div><div class="hero-board-bottom"><span>우리의 학교생활을<br>조금 더 가깝게.</span><span>MARKET / CLUBS / FINDER</span></div></div></section>\n<section class="services-section page-shell" aria-labelledby="services-title"><div class="section-heading"><div><p class="eyebrow">THREE WAYS TO CONNECT</p><h2 id="services-title">필요한 기능을 찾아보세요.</h2></div><p>광덕고 학생들의 일상에 맞춘 세 가지 서비스</p></div><div class="service-grid"><a class="service-card" href="{% url \'market\' %}"><div class="service-card-top"><span class="service-number">01 / MARKET</span><span class="service-icon-frame">M</span></div><div><h3>Gwg Market</h3><p>교내에서 안전하게 사고팔고, 나누는 공간</p></div><span class="card-arrow" aria-hidden="true">↗</span><span class="service-action">상품 둘러보기</span></a><a class="service-card" href="{% url \'clubs\' %}"><div class="service-card-top"><span class="service-number">02 / CLUBS</span><span class="service-icon-frame">C</span></div><div><h3>Gwg Clubs</h3><p>동아리와 학생 프로젝트를 발견하는 공간</p></div><span class="card-arrow" aria-hidden="true">↗</span><span class="service-action">동아리 둘러보기</span></a><a class="service-card" href="{% url \'finder\' %}"><div class="service-card-top"><span class="service-number">03 / FINDER</span><span class="service-icon-frame">F</span></div><div><h3>Gwg Finder</h3><p>잃어버린 물건과 습득물을 연결하는 공간</p></div><span class="card-arrow" aria-hidden="true">↗</span><span class="service-action">분실물 찾아보기</span></a></div></section>\n<section class="notice-section page-shell"><div><p class="eyebrow">A SAFE START</p><h2>공개된 정보는 안전하게,<br>학생 전용 기능은 꼼꼼하게.</h2></div><div class="notice-copy"><p>동아리와 공개 활동은 누구나 볼 수 있고, 게시글 작성과 지원은 초대 인증을 마친 학생만 이용할 수 있습니다.</p><a class="text-link" href="{% url \'register\' %}">가입 방식 알아보기 ↗</a></div></section>{% endblock %}\n',
     # 학생 인증용 초대 코드 입력.
+    # 이메일 인증을 마친 사용자가 초대 코드를 입력할 수 있게 한다.
     'invite.html': '{% extends \'base.html\' %}{% block content %}<div class="content-shell"><h1>학생 인증</h1><p>이메일 확인 후 발급받은 초대 코드를 입력해 주세요.</p><form method="post">{% csrf_token %}<label for="code">초대 코드</label><input id="code" name="code" required maxlength="128" autocomplete="off"><button>인증</button></form></div>{% endblock %}\n',
     # 발급 직후 초대 코드 표시.
+    # 발급 직후에만 초대 코드 원문을 보여 주므로 안전하게 전달하도록 안내한다.
     'issued_invitation.html': '{% extends \'base.html\' %}{% block content %}<div class="content-shell"><h1>초대 코드 발급</h1><p>코드는 이 화면에서만 확인할 수 있습니다. 확인된 경로로 안전하게 전달해 주세요.</p><p><code>{{ code }}</code></p><a href="{% url \'management\' %}">관리자로 돌아가기</a></div>{% endblock %}\n',
     # 관리자 회원·초대·분실물·이미지·신고 처리 화면.
+    # 관리할 사용자·초대·분실물·사진·신고를 목록으로 보여 준다. 자기 계정의 정지 버튼은 숨기고 각 항목 상태에 맞는 작업만 표시한다.
     'management.html': '{% extends \'base.html\' %}{% block content %}<div class="content-shell"><h1>관리자</h1><p><a href="{% url \'admin-club-new\' %}">동아리 만들기</a></p><h2>동아리 관리</h2>{% for club in clubs %}<p><a href="{% url \'club-manage\' club.slug %}">{{ club.name }}</a></p>{% endfor %}<h2>회원 관리</h2>{% for account in accounts %}<div class="card"><p>{{ account.first_name|default:account.username }} ({{ account.username }}) · {{ account.email }} · {% if account.is_active %}활성{% else %}정지{% endif %}</p>{% if account.pk != user.pk %}<form method="post" action="{% url \'admin-user-status\' account.pk %}">{% csrf_token %}{% if account.is_active %}<button name="action" value="suspend">정지</button>{% else %}<button name="action" value="unsuspend">정지 해제</button>{% endif %}</form>{% endif %}</div>{% endfor %}<h2>초대 코드</h2><form method="post" action="{% url \'admin-issue-invite\' %}">{% csrf_token %}<button>초대 코드 발급</button></form>{% for invitation in invitations %}<div class="card"><p>만료 {{ invitation.expires_at }} · {% if invitation.redeemed_at %}사용됨{% elif invitation.revoked_at %}폐기됨{% else %}미사용{% endif %}</p>{% if not invitation.redeemed_at and not invitation.revoked_at %}<form method="post" action="{% url \'admin-revoke-invite\' invitation.pk %}">{% csrf_token %}<button>폐기</button></form>{% endif %}</div>{% empty %}<p>초대 코드가 없습니다.</p>{% endfor %}<h2>분실물 공개 검토</h2>{% for post in pending_posts %}<div class="card"><p>{{ post.title }} · {{ post.general_location }}</p><form method="post" action="{% url \'admin-review-finder\' post.pk %}">{% csrf_token %}<input type="hidden" name="review_token" value="{{ post.review_token }}"><button name="decision" value="APPROVED">승인</button><button name="decision" value="REJECTED">거부</button></form></div>{% empty %}<p>검토할 게시물이 없습니다.</p>{% endfor %}<h2>사진 검토</h2>{% for image in pending_media %}<div class="card"><img src="{% url \'image-read\' image.pk %}" alt="검토할 사진" style="max-width:200px"><form method="post" action="{% url \'admin-review-media\' image.pk %}">{% csrf_token %}<button name="decision" value="APPROVED">승인</button><button name="decision" value="REJECTED">거부</button></form></div>{% empty %}<p>검토할 사진이 없습니다.</p>{% endfor %}<h2>신고</h2>{% for report in reports %}<p>{{ report.target_type }} · {{ report.reason }}</p><form method="post" action="{% url \'admin-report-status\' report.pk %}">{% csrf_token %}<button name="status" value="REVIEWED">검토</button><button name="status" value="RESOLVED">처리 완료</button></form>{% empty %}<p>접수된 신고가 없습니다.</p>{% endfor %}</div>{% endblock %}\n',
     # 거래 검색 필터, 목록과 페이지 이동.
+    # 분류·거래 상태·가격 검색 조건을 유지한다. 결과를 카드로 보여 주고 없으면 안내한다.
     'market.html': '{% extends \'base.html\' %}{% block content %}<div class="content-shell"><p class="eyebrow">GWG MARKET</p><h1>우리 학교의 작은 거래</h1><p>필요한 물건을 찾고, 함께 나눠요.</p><p><a class="button button-dark" href="{% url \'market-new\' %}">물품 등록 ↗</a></p><form class="filter-form" method="get"><p><label for="q">검색</label><input type="search" id="q" name="q" value="{{ q }}"></p><p><label for="category">분류</label><select id="category" name="category"><option value="">전체</option>{% for category in categories %}<option value="{{ category }}" {% if request.GET.category == category %}selected{% endif %}>{{ category }}</option>{% endfor %}</select></p><p><label for="status">상태</label><select id="status" name="status"><option value="">전체</option><option value="AVAILABLE" {% if request.GET.status == \'AVAILABLE\' %}selected{% endif %}>판매 중</option><option value="RESERVED" {% if request.GET.status == \'RESERVED\' %}selected{% endif %}>예약 중</option><option value="COMPLETED" {% if request.GET.status == \'COMPLETED\' %}selected{% endif %}>거래 완료</option></select></p><p><label for="min_price">최소 가격</label><input id="min_price" name="min_price" type="number" min="0" value="{{ request.GET.min_price }}"></p><p><label for="max_price">최대 가격</label><input id="max_price" name="max_price" type="number" min="0" value="{{ request.GET.max_price }}"></p><button>검색</button></form><div class="cards">{% for post in posts %}<a class="card" href="{% url \'market-detail\' post.pk %}"><h2>{{ post.title }}</h2><p>{{ post.category }} · {{ post.get_status_display }}</p><p>{{ post.price }}원</p></a>{% empty %}<p>조건에 맞는 물품이 없습니다.</p>{% endfor %}</div>{% include \'pagination.html\' %}</div>{% endblock %}\n',
     # 학생 인증에 따른 설명 표시와 거래 당사자의 작업.
+    # 학생 인증 여부에 따라 자세한 설명을 보여 준다. 작성자에게는 수정·삭제·완료 작업을, 거래 가능한 다른 학생에게는 예약·신고 작업을 보여 준다. 취소 가능한 당사자에게만 취소 버튼을 보여 준다.
     'market_detail.html': '{% extends \'base.html\' %}{% block content %}<div class="content-shell"><h1>{{ post.title }}</h1>{% for image in post.images.all %}{% if image.moderation == \'APPROVED\' or user.id == post.owner_id or user.is_superuser %}<img src="{% url \'image-read\' image.pk %}" alt="{{ post.title }} 사진" loading="lazy" style="max-width:100%;max-height:420px">{% endif %}{% endfor %}<p>{{ post.category }} · {{ post.get_status_display }}</p><p>{{ post.price }}원</p>{% if user.is_authenticated and user.is_active and user.email_verified and user.student_active %}<p>{{ post.description|linebreaksbr }}</p>{% else %}<p>학생 인증 후 상세 설명을 볼 수 있습니다.</p>{% endif %}{% if user.is_authenticated and user.email_verified and user.student_active %}{% if post.owner_id == user.id %}{% if post.status == \'AVAILABLE\' %}<p><a href="{% url \'market-edit\' post.pk %}">수정</a></p><form method="post" action="{% url \'market-delete\' post.pk %}">{% csrf_token %}<button>삭제</button></form>{% endif %}{% else %}<p><a href="{% url \'report-create\' %}?target_type=market&amp;target_id={{ post.pk }}">신고하기</a></p>{% if post.status == \'AVAILABLE\' %}<form method="post" action="{% url \'market-reserve\' post.pk %}">{% csrf_token %}<button>예약</button></form>{% endif %}{% endif %}{% if may_cancel %}<form method="post" action="{% url \'market-status\' post.pk %}">{% csrf_token %}<button name="action" value="cancel">예약 취소</button>{% if post.owner_id == user.id %}<button name="action" value="complete">거래 완료</button>{% endif %}</form>{% endif %}{% endif %}</div>{% endblock %}\n',
     # 추천 점수와 소유권 증명이 아니라는 안내.
+    # 추천 후보를 점수와 함께 하나씩 보여 준다. 점수만으로 주인이라고 확정할 수 없다는 안내도 표시한다.
     'matches.html': '{% extends \'base.html\' %}{% block content %}<div class="content-shell"><h1>비슷한 게시물</h1><p>점수는 비교를 돕는 값이며 소유권의 증명이 아닙니다.</p>{% for score, post in matches %}<div class="card"><h2>{{ post.title }}</h2><p>{{ score }}점 · {{ post.general_location }}</p></div>{% empty %}<p>추천할 게시물이 없습니다.</p>{% endfor %}</div>{% endblock %}\n',
     # 내 거래·분실물·동아리 관리 및 지원 내역.
+    # 내 글·예약·지원·관리 동아리를 각각 보여 주고, 내역이 없으면 안내한다. 학생 인증 전이라면 인증 화면 링크를 보여 준다.
     'me.html': '{% extends \'base.html\' %}{% block content %}<div class="content-shell"><h1>마이페이지</h1><p>{{ user.first_name|default:user.username }}님</p>{% if not user.student_active %}<p><a href="/auth/invite/">학생 인증하기</a></p>{% endif %}<h2>내 물품</h2>{% for post in market_posts %}<p><a href="{% url \'market-detail\' post.pk %}">{{ post.title }}</a> · {{ post.get_status_display }}</p>{% empty %}<p>등록한 물품이 없습니다.</p>{% endfor %}<h2>내 거래 신청</h2>{% for reservation in reservations %}<p><a href="{% url \'market-detail\' reservation.post.pk %}">{{ reservation.post.title }}</a> · {{ reservation.get_status_display }}</p>{% empty %}<p>거래 신청이 없습니다.</p>{% endfor %}<h2>내 분실·습득물</h2>{% for post in finder_posts %}<p><a href="{% url \'finder-detail\' post.pk %}">{{ post.title }}</a> · {{ post.get_status_display }} · {{ post.get_public_approval_display }} {% if post.status == \'ACTIVE\' %}<a href="{% url \'finder-edit\' post.pk %}">수정</a> <a href="{% url \'finder-matches\' post.pk %}">비슷한 글</a>{% endif %}</p>{% empty %}<p>등록한 글이 없습니다.</p>{% endfor %}<h2>운영하는 동아리</h2>{% for membership in managed_clubs %}<p><a href="{% url \'club-manage\' membership.club.slug %}">{{ membership.club.name }} 관리</a></p>{% empty %}<p>운영하는 동아리가 없습니다.</p>{% endfor %}<h2>동아리 지원</h2>{% for application in applications %}<p>{{ application.recruitment.club.name }} · {{ application.get_status_display }}</p>{% empty %}<p>지원 내역이 없습니다.</p>{% endfor %}</div>{% endblock %}\n',
     # 제목과 안내 문구를 표시하는 공통 화면.
+    # 처리 결과 안내와 로그인 화면으로 이동하는 링크를 보여 준다.
     'message.html': '{% extends \'base.html\' %}{% block content %}<div class="content-shell"><h1>{{ title }}</h1><p>{{ message }}</p><a href="/auth/login/">로그인</a></div>{% endblock %}\n',
     # 현재 검색 조건을 유지하는 이전·다음 페이지 링크.
+    # 페이지가 여러 개일 때만 이동 영역을 보여 준다. 이전·다음 페이지가 있을 때만 해당 링크를 만들고 검색 조건은 유지한다.
     'pagination.html': '{% if page.paginator.num_pages > 1 %}<nav class="pagination" aria-label="페이지 이동">{% if page.has_previous %}<a href="{% querystring page=page.previous_page_number %}">이전</a>{% endif %}<span>{{ page.number }} / {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="{% querystring page=page.next_page_number %}">다음</a>{% endif %}</nav>{% endif %}\n',
     # 이메일 로그인과 인증 재발송·암호 재설정 링크.
+    # 로그인 입력 폼과 인증 메일 재발송·비밀번호 재설정 링크를 보여 준다.
     'registration/login.html': '{% extends \'base.html\' %}{% block content %}<div class="content-shell form-shell"><h1>로그인</h1><form method="post">{% csrf_token %}{{ form.as_p }}<button>로그인</button></form><p><a href="{% url \'resend-verification\' %}">인증 메일 다시 받기</a> · <a href="{% url \'password_reset\' %}">비밀번호 재설정</a></p></div>{% endblock %}\n',
     # 비밀번호 변경 완료와 로그인 링크.
+    # 비밀번호 변경 완료를 알리고 로그인 링크를 보여 준다.
     'registration/password_reset_complete.html': '{% extends \'base.html\' %}{% block content %}<div class="content-shell form-shell"><h1>비밀번호가 변경되었습니다</h1><a href="{% url \'login\' %}">로그인</a></div>{% endblock %}\n',
     # 유효한 링크의 새 비밀번호 입력 또는 만료 안내.
+    # 유효한 재설정 링크라면 새 비밀번호 입력란을 보여 주고, 만료·오류 링크면 다시 요청하도록 안내한다.
     'registration/password_reset_confirm.html': '{% extends \'base.html\' %}{% block content %}<div class="content-shell form-shell"><h1>새 비밀번호 설정</h1>{% if validlink %}<form method="post">{% csrf_token %}{{ form.as_p }}<button>변경</button></form>{% else %}<p>링크가 만료되었거나 유효하지 않습니다.</p>{% endif %}</div>{% endblock %}\n',
     # 계정 존재 여부를 노출하지 않는 재설정 안내.
+    # 계정이 실제로 있는지 드러내지 않고 메일 확인을 안내한다.
     'registration/password_reset_done.html': '{% extends \'base.html\' %}{% block content %}<div class="content-shell form-shell"><h1>이메일을 확인해 주세요</h1><p>해당 계정이 있다면 재설정 링크를 보냈습니다.</p></div>{% endblock %}\n',
     # 서명된 재설정 링크를 포함하는 메일 본문.
+    # 비밀번호를 바꿀 수 있는 확인용 링크를 메일 본문에 넣는다.
     'registration/password_reset_email.txt': "GwgCommunity 비밀번호 재설정을 요청하셨습니다.\n{{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}\n",
     # 비밀번호 재설정 이메일 입력.
+    # 비밀번호를 바꿀 이메일 주소를 입력받는다.
     'registration/password_reset_form.html': '{% extends \'base.html\' %}{% block content %}<div class="content-shell form-shell"><h1>비밀번호 재설정</h1><p>가입한 이메일을 입력하면 재설정 링크를 보내드립니다.</p><form method="post">{% csrf_token %}{{ form.as_p }}<button>메일 보내기</button></form></div>{% endblock %}\n',
 }

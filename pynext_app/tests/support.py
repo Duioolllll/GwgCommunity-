@@ -1,6 +1,4 @@
-# 제출용 기능·분기 설명: 조건식은 실제 코드의 평가 순서와 반환값을 기준으로 읽는다.
-# 표현식·화면 분기 목록 (같은 조건이 다른 함수에서 반복될 수 있음):
-# - 컴프리헨션: `('PATH', 'HOME', 'LD_LIBRARY_PATH', 'FONTCONFIG_FILE', 'PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH', 'PLAYWRIGHT_BROWSERS_PATH')`의 각 `key`를 순회한다. `key in os.environ`가 참인 항목만 포함한다.
+# 이 파일은 관련 기능을 실행하기 위한 코드와 설정을 모아 둔다.
 """Disposable app, database and PyNext server for HTTP/browser verification."""
 from contextlib import contextmanager
 import os
@@ -17,7 +15,7 @@ from urllib.request import urlopen
 APP = Path(__file__).resolve().parents[1]
 
 
-# 기능 `isolated_server`: With 구문으로 이어지는 내부 처리를 실행한다.
+# 실제 운영 데이터와 떨어진 시험 서버를 잠시 실행한다.
 @contextmanager
 def isolated_server():
     with tempfile.TemporaryDirectory(prefix="gwg-pynext-test-", dir="/tmp") as directory:
@@ -25,13 +23,14 @@ def isolated_server():
         copy = root / "app"
         shutil.copytree(APP, copy, ignore=shutil.ignore_patterns(
             "__pycache__", ".pynext", ".venv", "private_uploads", "static_collected", ".env", ".env.*"))
+        # 현재 실행 환경에 실제로 있는 설정만 시험 서버로 복사한다.
         env = {key: os.environ[key] for key in (
             "PATH", "HOME", "LD_LIBRARY_PATH", "FONTCONFIG_FILE",
             "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH", "PLAYWRIGHT_BROWSERS_PATH") if key in os.environ}
         env.update(PYTHONPATH=str(copy), DJANGO_DEBUG="1", DJANGO_SETTINGS_MODULE="config.settings",
                    DJANGO_SQLITE_PATH=str(root / "test.sqlite3"), GWG_BROWSER_TEST="1")
         python = sys.executable
-        # 반복 `([python, str(copy / 'manage.py'), 'migrate', '--noinput'], [python, str(copy / 'manage.py'), 'collectstatic', '--noinput'], [str(Path(python).with_name('pynext')), 'build', '--dir', str(copy)])`: 각 항목을 `command`에 담아 먼저 `subprocess.run(command, env=env, check=True, stdout=subprocess.DEVNULL)`를 실행한다. 항목이 없으면 본문을 건너뛴다.
+        # 준비한 목록을 하나씩 읽어 아래 작업을 반복한다. 목록이 비어 있으면 건너뛴다.
         for command in ([python, str(copy / "manage.py"), "migrate", "--noinput"],
                         [python, str(copy / "manage.py"), "collectstatic", "--noinput"],
                         [str(Path(python).with_name("pynext")), "build", "--dir", str(copy)]):
@@ -43,14 +42,14 @@ def isolated_server():
         with (root / "server.log").open("w+") as log:
             server = subprocess.Popen([python, str(copy / "serve.py"), "--port", str(port), "--workers", "1"],
                                       cwd=copy, env=env, stdout=log, stderr=log)
-            # 예외 경계: 본문을 시도하고 `BaseException` 발생 시 먼저 `log.flush()`를 실행한다. 성공·실패와 관계없이 마지막에 먼저 `server.terminate()`를 실행한다.
+            # 아래 작업을 시도하고, 오류가 나면 except에 적힌 방법으로 처리한다. 성공하거나 실패해도 finally의 정리 작업은 실행한다.
             try:
-                # 반복 `range(150)`: 각 항목을 `_`에 담아 If 구문으로 이어지는 내부 처리를 실행한다. 항목이 없으면 본문을 건너뛴다. 정상 소진 시 RuntimeError('PyNext DB readiness failed') 예외를 발생시킨다.
+                # 정해 둔 횟수만큼 시도하거나 측정을 반복한다.
                 for _ in range(150):
-                    # 조건 분기 `server.poll() is not None`: 참이면 RuntimeError('PyNext server exited') 예외를 발생시킨다. 거짓이면 이 블록을 건너뛰고 이후 코드로 진행한다.
+                    # 시험 서버가 준비되기 전에 종료되었다면 실패 이유를 알려 준다.
                     if server.poll() is not None:
                         raise RuntimeError("PyNext server exited")
-                    # 예외 경계: 본문을 시도하고 `(URLError, TimeoutError)` 발생 시 먼저 `time.sleep(0.1)`를 실행한다.
+                    # 아래 작업을 시도하고, 오류가 나면 except에 적힌 방법으로 처리한다.
                     try:
                         with urlopen(env["GWG_BROWSER_URL"] + "/health/database", timeout=0.5):
                             break
@@ -66,7 +65,7 @@ def isolated_server():
                 raise
             finally:
                 server.terminate()
-                # 예외 경계: 본문을 시도하고 `subprocess.TimeoutExpired` 발생 시 먼저 `server.kill()`를 실행한다.
+                # 아래 작업을 시도하고, 오류가 나면 except에 적힌 방법으로 처리한다.
                 try:
                     server.wait(timeout=20)
                 except subprocess.TimeoutExpired:

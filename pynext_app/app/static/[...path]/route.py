@@ -1,8 +1,8 @@
-# 제출용 기능·분기 설명: 조건식은 실제 코드의 평가 순서와 반환값을 기준으로 읽는다.
+# 이 파일은 주소와 요청 방식을 실제 처리 함수에 연결한다.
 from pynext import route
 from gateway import dispatch
 
-# 기능 `get`: await dispatch(request, -1, params)을 반환한다.
+# 보관된 사진 파일을 읽는다.
 @route("GET")
 async def get(request, params):
     return await dispatch(request, -1, params)

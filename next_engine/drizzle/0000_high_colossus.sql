@@ -1,4 +1,4 @@
--- 데이터베이스 스키마 이력: 테이블·열·관계·인덱스 제약을 순서대로 적용한다.
+-- 데이터베이스에 어떤 표와 항목이 필요한지 정해 두는 파일이다. 적힌 순서대로 적용한다.
 CREATE TYPE "public"."application_status" AS ENUM('SUBMITTED', 'IN_REVIEW', 'ACCEPTED', 'REJECTED', 'CANCELLED');--> statement-breakpoint
 CREATE TYPE "public"."club_role" AS ENUM('owner', 'manager', 'member');--> statement-breakpoint
 CREATE TYPE "public"."finder_kind" AS ENUM('lost', 'found');--> statement-breakpoint
@@ -9,7 +9,7 @@ CREATE TYPE "public"."report_status" AS ENUM('OPEN', 'REVIEWED', 'RESOLVED');-->
 CREATE TYPE "public"."reservation_status" AS ENUM('ACTIVE', 'CANCELLED', 'COMPLETED');--> statement-breakpoint
 CREATE TYPE "public"."user_role" AS ENUM('student', 'admin');--> statement-breakpoint
 CREATE TYPE "public"."user_status" AS ENUM('UNVERIFIED_EMAIL', 'VERIFIED_PENDING_INVITE', 'ACTIVE_STUDENT', 'SUSPENDED');--> statement-breakpoint
--- 스키마 작업 CREATE TABLE: "account" (
+-- 아래 이름의 표를 만들고 저장할 항목과 자료형을 정한다.
 CREATE TABLE "account" (
 	"id" text PRIMARY KEY NOT NULL,
 	"account_id" text NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE "account" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
--- 스키마 작업 CREATE TABLE: "audit_logs" (
+-- 아래 이름의 표를 만들고 저장할 항목과 자료형을 정한다.
 CREATE TABLE "audit_logs" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"actor_id" text,
@@ -36,7 +36,7 @@ CREATE TABLE "audit_logs" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
--- 스키마 작업 CREATE TABLE: "club_applications" (
+-- 아래 이름의 표를 만들고 저장할 항목과 자료형을 정한다.
 CREATE TABLE "club_applications" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"recruitment_id" uuid NOT NULL,
@@ -46,7 +46,7 @@ CREATE TABLE "club_applications" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
--- 스키마 작업 CREATE TABLE: "club_members" (
+-- 아래 이름의 표를 만들고 저장할 항목과 자료형을 정한다.
 CREATE TABLE "club_members" (
 	"club_id" uuid NOT NULL,
 	"user_id" text NOT NULL,
@@ -54,7 +54,7 @@ CREATE TABLE "club_members" (
 	CONSTRAINT "club_members_club_id_user_id_pk" PRIMARY KEY("club_id","user_id")
 );
 --> statement-breakpoint
--- 스키마 작업 CREATE TABLE: "club_posts" (
+-- 아래 이름의 표를 만들고 저장할 항목과 자료형을 정한다.
 CREATE TABLE "club_posts" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"club_id" uuid NOT NULL,
@@ -65,7 +65,7 @@ CREATE TABLE "club_posts" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
--- 스키마 작업 CREATE TABLE: "club_recruitments" (
+-- 아래 이름의 표를 만들고 저장할 항목과 자료형을 정한다.
 CREATE TABLE "club_recruitments" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"club_id" uuid NOT NULL,
@@ -77,7 +77,7 @@ CREATE TABLE "club_recruitments" (
 	CONSTRAINT "recruitment_dates_ordered" CHECK ("club_recruitments"."closes_at" > "club_recruitments"."opens_at")
 );
 --> statement-breakpoint
--- 스키마 작업 CREATE TABLE: "clubs" (
+-- 아래 이름의 표를 만들고 저장할 항목과 자료형을 정한다.
 CREATE TABLE "clubs" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"slug" varchar(100) NOT NULL,
@@ -89,7 +89,7 @@ CREATE TABLE "clubs" (
 	CONSTRAINT "clubs_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
--- 스키마 작업 CREATE TABLE: "finder_matches" (
+-- 아래 이름의 표를 만들고 저장할 항목과 자료형을 정한다.
 CREATE TABLE "finder_matches" (
 	"lost_id" uuid NOT NULL,
 	"found_id" uuid NOT NULL,
@@ -100,7 +100,7 @@ CREATE TABLE "finder_matches" (
 	CONSTRAINT "finder_match_distinct" CHECK ("finder_matches"."lost_id" <> "finder_matches"."found_id")
 );
 --> statement-breakpoint
--- 스키마 작업 CREATE TABLE: "finder_posts" (
+-- 아래 이름의 표를 만들고 저장할 항목과 자료형을 정한다.
 CREATE TABLE "finder_posts" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"owner_id" text NOT NULL,
@@ -115,7 +115,7 @@ CREATE TABLE "finder_posts" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
--- 스키마 작업 CREATE TABLE: "invitations" (
+-- 아래 이름의 표를 만들고 저장할 항목과 자료형을 정한다.
 CREATE TABLE "invitations" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"code_hash" text NOT NULL,
@@ -129,7 +129,7 @@ CREATE TABLE "invitations" (
 	CONSTRAINT "invitations_redemption_pair" CHECK (("invitations"."redeemed_at" IS NULL) = ("invitations"."redeemed_by" IS NULL))
 );
 --> statement-breakpoint
--- 스키마 작업 CREATE TABLE: "market_posts" (
+-- 아래 이름의 표를 만들고 저장할 항목과 자료형을 정한다.
 CREATE TABLE "market_posts" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"owner_id" text NOT NULL,
@@ -143,7 +143,7 @@ CREATE TABLE "market_posts" (
 	CONSTRAINT "market_price_nonnegative" CHECK ("market_posts"."price" >= 0)
 );
 --> statement-breakpoint
--- 스키마 작업 CREATE TABLE: "market_reservations" (
+-- 아래 이름의 표를 만들고 저장할 항목과 자료형을 정한다.
 CREATE TABLE "market_reservations" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"post_id" uuid NOT NULL,
@@ -152,7 +152,7 @@ CREATE TABLE "market_reservations" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
--- 스키마 작업 CREATE TABLE: "media_assets" (
+-- 아래 이름의 표를 만들고 저장할 항목과 자료형을 정한다.
 CREATE TABLE "media_assets" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"owner_id" text NOT NULL,
@@ -165,7 +165,7 @@ CREATE TABLE "media_assets" (
 	CONSTRAINT "media_size_positive" CHECK ("media_assets"."size" > 0)
 );
 --> statement-breakpoint
--- 스키마 작업 CREATE TABLE: "reports" (
+-- 아래 이름의 표를 만들고 저장할 항목과 자료형을 정한다.
 CREATE TABLE "reports" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"reporter_id" text NOT NULL,
@@ -176,7 +176,7 @@ CREATE TABLE "reports" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
--- 스키마 작업 CREATE TABLE: "session" (
+-- 아래 이름의 표를 만들고 저장할 항목과 자료형을 정한다.
 CREATE TABLE "session" (
 	"id" text PRIMARY KEY NOT NULL,
 	"expires_at" timestamp with time zone NOT NULL,
@@ -189,7 +189,7 @@ CREATE TABLE "session" (
 	CONSTRAINT "session_token_unique" UNIQUE("token")
 );
 --> statement-breakpoint
--- 스키마 작업 CREATE TABLE: "user" (
+-- 아래 이름의 표를 만들고 저장할 항목과 자료형을 정한다.
 CREATE TABLE "user" (
 	"id" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
@@ -203,7 +203,7 @@ CREATE TABLE "user" (
 	CONSTRAINT "user_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
--- 스키마 작업 CREATE TABLE: "verification" (
+-- 아래 이름의 표를 만들고 저장할 항목과 자료형을 정한다.
 CREATE TABLE "verification" (
 	"id" text PRIMARY KEY NOT NULL,
 	"identifier" text NOT NULL,
@@ -213,69 +213,69 @@ CREATE TABLE "verification" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
--- 스키마 작업 ALTER TABLE: "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- 서로 관련된 표의 번호를 연결해 존재하지 않는 자료를 가리키지 못하게 한다.
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
--- 스키마 작업 ALTER TABLE: "audit_logs" ADD CONSTRAINT "audit_logs_actor_id_user_id_fk" FOREIGN KEY ("actor_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- 서로 관련된 표의 번호를 연결해 존재하지 않는 자료를 가리키지 못하게 한다.
 ALTER TABLE "audit_logs" ADD CONSTRAINT "audit_logs_actor_id_user_id_fk" FOREIGN KEY ("actor_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
--- 스키마 작업 ALTER TABLE: "club_applications" ADD CONSTRAINT "club_applications_recruitment_id_club_recruitments_id_fk" FOREIGN KEY ("recruitment_id") REFERENCES "public"."club_recruitments"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- 서로 관련된 표의 번호를 연결해 존재하지 않는 자료를 가리키지 못하게 한다.
 ALTER TABLE "club_applications" ADD CONSTRAINT "club_applications_recruitment_id_club_recruitments_id_fk" FOREIGN KEY ("recruitment_id") REFERENCES "public"."club_recruitments"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
--- 스키마 작업 ALTER TABLE: "club_applications" ADD CONSTRAINT "club_applications_applicant_id_user_id_fk" FOREIGN KEY ("applicant_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- 서로 관련된 표의 번호를 연결해 존재하지 않는 자료를 가리키지 못하게 한다.
 ALTER TABLE "club_applications" ADD CONSTRAINT "club_applications_applicant_id_user_id_fk" FOREIGN KEY ("applicant_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
--- 스키마 작업 ALTER TABLE: "club_members" ADD CONSTRAINT "club_members_club_id_clubs_id_fk" FOREIGN KEY ("club_id") REFERENCES "public"."clubs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- 서로 관련된 표의 번호를 연결해 존재하지 않는 자료를 가리키지 못하게 한다.
 ALTER TABLE "club_members" ADD CONSTRAINT "club_members_club_id_clubs_id_fk" FOREIGN KEY ("club_id") REFERENCES "public"."clubs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
--- 스키마 작업 ALTER TABLE: "club_members" ADD CONSTRAINT "club_members_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- 서로 관련된 표의 번호를 연결해 존재하지 않는 자료를 가리키지 못하게 한다.
 ALTER TABLE "club_members" ADD CONSTRAINT "club_members_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
--- 스키마 작업 ALTER TABLE: "club_posts" ADD CONSTRAINT "club_posts_club_id_clubs_id_fk" FOREIGN KEY ("club_id") REFERENCES "public"."clubs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- 서로 관련된 표의 번호를 연결해 존재하지 않는 자료를 가리키지 못하게 한다.
 ALTER TABLE "club_posts" ADD CONSTRAINT "club_posts_club_id_clubs_id_fk" FOREIGN KEY ("club_id") REFERENCES "public"."clubs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
--- 스키마 작업 ALTER TABLE: "club_posts" ADD CONSTRAINT "club_posts_author_id_user_id_fk" FOREIGN KEY ("author_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- 서로 관련된 표의 번호를 연결해 존재하지 않는 자료를 가리키지 못하게 한다.
 ALTER TABLE "club_posts" ADD CONSTRAINT "club_posts_author_id_user_id_fk" FOREIGN KEY ("author_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
--- 스키마 작업 ALTER TABLE: "club_recruitments" ADD CONSTRAINT "club_recruitments_club_id_clubs_id_fk" FOREIGN KEY ("club_id") REFERENCES "public"."clubs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- 서로 관련된 표의 번호를 연결해 존재하지 않는 자료를 가리키지 못하게 한다.
 ALTER TABLE "club_recruitments" ADD CONSTRAINT "club_recruitments_club_id_clubs_id_fk" FOREIGN KEY ("club_id") REFERENCES "public"."clubs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
--- 스키마 작업 ALTER TABLE: "finder_matches" ADD CONSTRAINT "finder_matches_lost_id_finder_posts_id_fk" FOREIGN KEY ("lost_id") REFERENCES "public"."finder_posts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- 서로 관련된 표의 번호를 연결해 존재하지 않는 자료를 가리키지 못하게 한다.
 ALTER TABLE "finder_matches" ADD CONSTRAINT "finder_matches_lost_id_finder_posts_id_fk" FOREIGN KEY ("lost_id") REFERENCES "public"."finder_posts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
--- 스키마 작업 ALTER TABLE: "finder_matches" ADD CONSTRAINT "finder_matches_found_id_finder_posts_id_fk" FOREIGN KEY ("found_id") REFERENCES "public"."finder_posts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- 서로 관련된 표의 번호를 연결해 존재하지 않는 자료를 가리키지 못하게 한다.
 ALTER TABLE "finder_matches" ADD CONSTRAINT "finder_matches_found_id_finder_posts_id_fk" FOREIGN KEY ("found_id") REFERENCES "public"."finder_posts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
--- 스키마 작업 ALTER TABLE: "finder_posts" ADD CONSTRAINT "finder_posts_owner_id_user_id_fk" FOREIGN KEY ("owner_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- 서로 관련된 표의 번호를 연결해 존재하지 않는 자료를 가리키지 못하게 한다.
 ALTER TABLE "finder_posts" ADD CONSTRAINT "finder_posts_owner_id_user_id_fk" FOREIGN KEY ("owner_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
--- 스키마 작업 ALTER TABLE: "invitations" ADD CONSTRAINT "invitations_issued_by_user_id_fk" FOREIGN KEY ("issued_by") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- 서로 관련된 표의 번호를 연결해 존재하지 않는 자료를 가리키지 못하게 한다.
 ALTER TABLE "invitations" ADD CONSTRAINT "invitations_issued_by_user_id_fk" FOREIGN KEY ("issued_by") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
--- 스키마 작업 ALTER TABLE: "invitations" ADD CONSTRAINT "invitations_redeemed_by_user_id_fk" FOREIGN KEY ("redeemed_by") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- 서로 관련된 표의 번호를 연결해 존재하지 않는 자료를 가리키지 못하게 한다.
 ALTER TABLE "invitations" ADD CONSTRAINT "invitations_redeemed_by_user_id_fk" FOREIGN KEY ("redeemed_by") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
--- 스키마 작업 ALTER TABLE: "market_posts" ADD CONSTRAINT "market_posts_owner_id_user_id_fk" FOREIGN KEY ("owner_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- 서로 관련된 표의 번호를 연결해 존재하지 않는 자료를 가리키지 못하게 한다.
 ALTER TABLE "market_posts" ADD CONSTRAINT "market_posts_owner_id_user_id_fk" FOREIGN KEY ("owner_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
--- 스키마 작업 ALTER TABLE: "market_reservations" ADD CONSTRAINT "market_reservations_post_id_market_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."market_posts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- 서로 관련된 표의 번호를 연결해 존재하지 않는 자료를 가리키지 못하게 한다.
 ALTER TABLE "market_reservations" ADD CONSTRAINT "market_reservations_post_id_market_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."market_posts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
--- 스키마 작업 ALTER TABLE: "market_reservations" ADD CONSTRAINT "market_reservations_requester_id_user_id_fk" FOREIGN KEY ("requester_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- 서로 관련된 표의 번호를 연결해 존재하지 않는 자료를 가리키지 못하게 한다.
 ALTER TABLE "market_reservations" ADD CONSTRAINT "market_reservations_requester_id_user_id_fk" FOREIGN KEY ("requester_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
--- 스키마 작업 ALTER TABLE: "media_assets" ADD CONSTRAINT "media_assets_owner_id_user_id_fk" FOREIGN KEY ("owner_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- 서로 관련된 표의 번호를 연결해 존재하지 않는 자료를 가리키지 못하게 한다.
 ALTER TABLE "media_assets" ADD CONSTRAINT "media_assets_owner_id_user_id_fk" FOREIGN KEY ("owner_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
--- 스키마 작업 ALTER TABLE: "reports" ADD CONSTRAINT "reports_reporter_id_user_id_fk" FOREIGN KEY ("reporter_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- 서로 관련된 표의 번호를 연결해 존재하지 않는 자료를 가리키지 못하게 한다.
 ALTER TABLE "reports" ADD CONSTRAINT "reports_reporter_id_user_id_fk" FOREIGN KEY ("reporter_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
--- 스키마 작업 ALTER TABLE: "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- 서로 관련된 표의 번호를 연결해 존재하지 않는 자료를 가리키지 못하게 한다.
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
--- 스키마 작업 CREATE INDEX: "account_user_idx" ON "account" USING btree ("user_id");--> statement-breakpoint
+-- 자주 검색하는 항목에 찾기용 목록을 만들어 검색 속도를 높인다.
 CREATE INDEX "account_user_idx" ON "account" USING btree ("user_id");--> statement-breakpoint
--- 스키마 작업 CREATE UNIQUE INDEX: "account_provider_identity_idx" ON "account" USING btree ("provider_id","account_id");--> statement-breakpoint
+-- 같은 값이 중복 저장되지 않게 하고 이 값으로 빠르게 찾을 수 있게 한다.
 CREATE UNIQUE INDEX "account_provider_identity_idx" ON "account" USING btree ("provider_id","account_id");--> statement-breakpoint
--- 스키마 작업 CREATE INDEX: "audit_created_idx" ON "audit_logs" USING btree ("created_at");--> statement-breakpoint
+-- 자주 검색하는 항목에 찾기용 목록을 만들어 검색 속도를 높인다.
 CREATE INDEX "audit_created_idx" ON "audit_logs" USING btree ("created_at");--> statement-breakpoint
--- 스키마 작업 CREATE UNIQUE INDEX: "application_recruitment_user_idx" ON "club_applications" USING btree ("recruitment_id","applicant_id");--> statement-breakpoint
+-- 같은 값이 중복 저장되지 않게 하고 이 값으로 빠르게 찾을 수 있게 한다.
 CREATE UNIQUE INDEX "application_recruitment_user_idx" ON "club_applications" USING btree ("recruitment_id","applicant_id");--> statement-breakpoint
--- 스키마 작업 CREATE INDEX: "club_posts_club_idx" ON "club_posts" USING btree ("club_id","created_at");--> statement-breakpoint
+-- 자주 검색하는 항목에 찾기용 목록을 만들어 검색 속도를 높인다.
 CREATE INDEX "club_posts_club_idx" ON "club_posts" USING btree ("club_id","created_at");--> statement-breakpoint
--- 스키마 작업 CREATE INDEX: "recruitment_club_idx" ON "club_recruitments" USING btree ("club_id","is_open");--> statement-breakpoint
+-- 자주 검색하는 항목에 찾기용 목록을 만들어 검색 속도를 높인다.
 CREATE INDEX "recruitment_club_idx" ON "club_recruitments" USING btree ("club_id","is_open");--> statement-breakpoint
--- 스키마 작업 CREATE INDEX: "finder_search_idx" ON "finder_posts" USING btree ("kind","status","category","occurred_at");--> statement-breakpoint
+-- 자주 검색하는 항목에 찾기용 목록을 만들어 검색 속도를 높인다.
 CREATE INDEX "finder_search_idx" ON "finder_posts" USING btree ("kind","status","category","occurred_at");--> statement-breakpoint
--- 스키마 작업 CREATE INDEX: "market_search_idx" ON "market_posts" USING btree ("status","category","created_at");--> statement-breakpoint
+-- 자주 검색하는 항목에 찾기용 목록을 만들어 검색 속도를 높인다.
 CREATE INDEX "market_search_idx" ON "market_posts" USING btree ("status","category","created_at");--> statement-breakpoint
--- 스키마 작업 CREATE UNIQUE INDEX: "market_one_active_reservation_idx" ON "market_reservations" USING btree ("post_id") WHERE "market_reservations"."status" = 'ACTIVE';--> statement-breakpoint
+-- 같은 값이 중복 저장되지 않게 하고 이 값으로 빠르게 찾을 수 있게 한다.
 CREATE UNIQUE INDEX "market_one_active_reservation_idx" ON "market_reservations" USING btree ("post_id") WHERE "market_reservations"."status" = 'ACTIVE';--> statement-breakpoint
--- 스키마 작업 CREATE INDEX: "reservation_requester_idx" ON "market_reservations" USING btree ("requester_id");--> statement-breakpoint
+-- 자주 검색하는 항목에 찾기용 목록을 만들어 검색 속도를 높인다.
 CREATE INDEX "reservation_requester_idx" ON "market_reservations" USING btree ("requester_id");--> statement-breakpoint
--- 스키마 작업 CREATE INDEX: "reports_status_idx" ON "reports" USING btree ("status","created_at");--> statement-breakpoint
+-- 자주 검색하는 항목에 찾기용 목록을 만들어 검색 속도를 높인다.
 CREATE INDEX "reports_status_idx" ON "reports" USING btree ("status","created_at");--> statement-breakpoint
--- 스키마 작업 CREATE INDEX: "session_user_idx" ON "session" USING btree ("user_id");--> statement-breakpoint
+-- 자주 검색하는 항목에 찾기용 목록을 만들어 검색 속도를 높인다.
 CREATE INDEX "session_user_idx" ON "session" USING btree ("user_id");--> statement-breakpoint
--- 스키마 작업 CREATE INDEX: "verification_identifier_idx" ON "verification" USING btree ("identifier");
+-- 자주 검색하는 항목에 찾기용 목록을 만들어 검색 속도를 높인다.
 CREATE INDEX "verification_identifier_idx" ON "verification" USING btree ("identifier");

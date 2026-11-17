@@ -1,22 +1,4 @@
-# 제출용 기능·분기 설명: 조건식은 실제 코드의 평가 순서와 반환값을 기준으로 읽는다.
-# 표현식·화면 분기 목록 (같은 조건이 다른 함수에서 반복될 수 있음):
-# - 단락 평가 `args.seconds <= 0 or args.repeats <= 0 or any((n <= 0 for n in args.concurrency))`: 왼쪽 값이 참이면 남은 항을 평가하지 않고 그 값을 사용한다.
-# - 컴프리헨션: `sorted({row[1] for row in records})`의 각 `status`를 순회한다.
-# - 컴프리헨션: `('PATH', 'HOME', 'LD_LIBRARY_PATH')`의 각 `key`를 순회한다. `key in os.environ`가 참인 항목만 포함한다.
-# - 컴프리헨션: `range(concurrency)`의 각 `index`를 순회한다.
-# - 컴프리헨션: `futures`의 각 `future`를 순회한다.
-# - 컴프리헨션: `future.result()`의 각 `row`를 순회한다.
-# - 컴프리헨션: `records`의 각 `row`를 순회한다.
-# - 컴프리헨션: `results['runs']`의 각 `row`를 순회한다.
-# - 컴프리헨션: `records`의 각 `row`를 순회한다.
-# - 컴프리헨션: `records`의 각 `row`를 순회한다.
-# - 컴프리헨션: `records`의 각 `row`를 순회한다.
-# - 컴프리헨션: `records`의 각 `row`를 순회한다.
-# - 컴프리헨션: `args.concurrency`의 각 `n`를 순회한다.
-# - 컴프리헨션: `records`의 각 `row`를 순회한다.
-# - 컴프리헨션: `results['runs']`의 각 `row`를 순회한다.
-# - 조건식 `repeat % 2 == 0`: 참일 때 `engines`, 거짓일 때 `list(reversed(engines))`를 선택한다.
-# - 컴프리헨션: `zip(values[0][key], values[1][key])`의 각 `(a, b)`를 순회한다.
+# 이 파일은 관련 기능을 실행하기 위한 코드와 설정을 모아 둔다.
 """Reproducible Next.js versus PyNext application benchmark on synthetic data.
 
 Starts a disposable PostgreSQL container, imports the same fixture into both
@@ -48,21 +30,21 @@ PATHS = ("/", "/market", "/clubs", "/api/market", "/api/clubs",
          "/api/market?category=" + quote("책·교재") + "&minPrice=1000&maxPrice=90000&page=2")
 
 
-# 기능 `free_port`: With 구문으로 이어지는 내부 처리를 실행한다.
+# 시험 서버가 쓸 수 있는 빈 포트 번호를 찾는다.
 def free_port():
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
         return sock.getsockname()[1]
 
 
-# 기능 `process_stats`: 먼저 `ticks, rss = (0, 0)`로 상태 또는 조회 조건을 갱신한다.
+# 서버 프로세스가 쓰는 CPU와 메모리 사용량을 읽는다.
 def process_stats(pid):
     ticks, rss = 0, 0
     pending = [pid]
-    # 반복 조건 `pending`이 참인 동안 먼저 `current = pending.pop()`로 상태 또는 조회 조건을 갱신한다. 거짓이면 반복을 끝낸다.
+    # pending인 동안 반복한다. 조건이 달라지면 반복을 끝낸다.
     while pending:
         current = pending.pop()
-        # 예외 경계: 본문을 시도하고 `(FileNotFoundError, ProcessLookupError)` 발생 시 현재 항목을 건너뛰고 다음 반복으로 진행한다.
+        # 아래 작업을 시도하고, 오류가 나면 except에 적힌 방법으로 처리한다.
         try:
             root = Path(f"/proc/{current}")
             values = (root / "stat").read_text().rsplit(")", 1)[1].split()
@@ -74,7 +56,7 @@ def process_stats(pid):
     return ticks, rss
 
 
-# 기능 `sample`: 먼저 `barrier = threading.Barrier(concurrency + 1)`로 상태 또는 조회 조건을 갱신한다.
+# 정해진 시간 동안 요청을 보내 속도와 자원 사용량을 측정한다.
 def sample(port, path, concurrency, seconds, pid):
     barrier = threading.Barrier(concurrency + 1)
     deadline = [0.0]
@@ -82,23 +64,23 @@ def sample(port, path, concurrency, seconds, pid):
     rss_peak = [rss_before]
     stop_monitor = threading.Event()
 
-    # 기능 `monitor`: While 구문으로 이어지는 내부 처리를 실행한다.
+    # 측정이 끝날 때까지 서버의 CPU·메모리 사용량을 주기적으로 기록한다.
     def monitor():
-        # 반복 조건 `not stop_monitor.wait(0.1)`이 참인 동안 먼저 `rss_peak[0] = max(rss_peak[0], process_stats(pid)[1])`로 상태 또는 조회 조건을 갱신한다. 거짓이면 반복을 끝낸다.
+        # 측정 종료 신호가 올 때까지 반복해서 서버 상태를 기록한다.
         while not stop_monitor.wait(0.1):
             rss_peak[0] = max(rss_peak[0], process_stats(pid)[1])
 
-    # 기능 `worker`: 먼저 `connection = http.client.HTTPConnection('127.0.0.1', port, timeout=10)`로 상태 또는 조회 조건을 갱신한다.
+    # 한 명의 시험 사용자처럼 반복해서 요청을 보내고 응답 시간을 기록한다.
     def worker(_):
         connection = http.client.HTTPConnection("127.0.0.1", port, timeout=10)
         records = []
         barrier.wait()
-        # 예외 경계: 본문을 시도하고 . 성공·실패와 관계없이 마지막에 먼저 `connection.close()`를 실행한다.
+        # 아래 작업을 시도하고, 오류가 나면 except에 적힌 방법으로 처리한다. 성공하거나 실패해도 finally의 정리 작업은 실행한다.
         try:
-            # 반복 조건 `time.perf_counter() < deadline[0]`이 참인 동안 먼저 `started = time.perf_counter()`로 상태 또는 조회 조건을 갱신한다. 거짓이면 반복을 끝낸다.
+            # 미리 정한 시험 종료 시각 전까지 계속 요청을 보낸다.
             while time.perf_counter() < deadline[0]:
                 started = time.perf_counter()
-                # 예외 경계: 본문을 시도하고 `(OSError, http.client.HTTPException)` 발생 시 먼저 `status, size = (0, 0)`로 상태 또는 조회 조건을 갱신한다.
+                # 아래 작업을 시도하고, 오류가 나면 except에 적힌 방법으로 처리한다.
                 try:
                     connection.request("GET", path, headers={"Host": "localhost", "Accept-Encoding": "identity"})
                     response = connection.getresponse()
@@ -138,14 +120,14 @@ def sample(port, path, concurrency, seconds, pid):
             "bytes_min": min(row[2] for row in records), "bytes_max": max(row[2] for row in records)}
 
 
-# 기능 `wait_ready`: For 구문으로 이어지는 내부 처리를 실행한다.
+# 서버가 응답할 때까지 기다리고, 시작에 실패하면 오류를 알려 준다.
 def wait_ready(server, port, path):
-    # 반복 `range(200)`: 각 항목을 `_`에 담아 If 구문으로 이어지는 내부 처리를 실행한다. 항목이 없으면 본문을 건너뛴다.
+    # 정해 둔 횟수만큼 시도하거나 측정을 반복한다.
     for _ in range(200):
-        # 조건 분기 `server.poll() is not None`: 참이면 RuntimeError(f'Server on port {port} exited') 예외를 발생시킨다. 거짓이면 이 블록을 건너뛰고 이후 코드로 진행한다.
+        # 시험 서버가 준비되기 전에 종료되었다면 실패 이유를 알려 준다.
         if server.poll() is not None:
             raise RuntimeError(f"Server on port {port} exited")
-        # 예외 경계: 본문을 시도하고 `(OSError, TimeoutError)` 발생 시 먼저 `time.sleep(0.1)`를 실행한다.
+        # 아래 작업을 시도하고, 오류가 나면 except에 적힌 방법으로 처리한다.
         try:
             with urlopen(f"http://127.0.0.1:{port}{path}", timeout=1):
                 return
@@ -154,10 +136,10 @@ def wait_ready(server, port, path):
     raise RuntimeError("Readiness timeout")
 
 
-# 기능 `seed`: With 구문으로 이어지는 내부 처리를 실행한다.
+# 두 서버가 같은 데이터로 시험하도록 시험 자료를 준비한다.
 def seed(source_url):
     with psycopg.connect(source_url, autocommit=True) as connection:
-        # 반복 `sorted((ROOT / 'next_engine/drizzle').glob('*.sql'))`: 각 항목을 `migration`에 담아 먼저 `connection.execute(migration.read_text())`를 실행한다. 항목이 없으면 본문을 건너뛴다.
+        # 준비한 목록을 하나씩 읽어 아래 작업을 반복한다. 목록이 비어 있으면 건너뛴다.
         for migration in sorted((ROOT / "next_engine/drizzle").glob("*.sql")):
             connection.execute(migration.read_text())
         connection.execute('''INSERT INTO "user" (id,name,email,email_verified,status)
@@ -174,7 +156,7 @@ def seed(source_url):
             SELECT id,'모집','합성 모집 데이터',now()-interval '1 day',now()+interval '1 day',true FROM clubs''')
 
 
-# 기능 `main`: 먼저 `parser = argparse.ArgumentParser()`로 상태 또는 조회 조건을 갱신한다.
+# 프로그램을 시작하고 실행 옵션에 맞는 작업을 진행한다.
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--seconds", type=float, default=3)
@@ -182,13 +164,14 @@ def main():
     parser.add_argument("--concurrency", type=int, nargs="+", default=[1, 8, 32])
     parser.add_argument("--output", type=Path, default=APP / "benchmarks/results-nextjs-pynext.json")
     args = parser.parse_args()
-    # 조건 분기 `args.seconds <= 0 or args.repeats <= 0 or any((n <= 0 for n in args.concurrency))`: 참이면 먼저 `parser.error('Durations and counts must be positive')`를 실행한다. 거짓이면 이 블록을 건너뛰고 이후 코드로 진행한다.
+    # 시험 시간·반복 횟수·동시 접속 수는 모두 양수여야 한다.
     if args.seconds <= 0 or args.repeats <= 0 or any(n <= 0 for n in args.concurrency):
         parser.error("Durations and counts must be positive")
     port, next_port, py_port = free_port(), free_port(), free_port()
     container = f"gwg-framework-bench-{os.getpid()}"
     base_url = f"postgresql://benchmark:benchmark-only@127.0.0.1:{port}"
     source_url, target_url = base_url + "/gwg_next_bench", base_url + "/gwg_pynext_bench"
+    # 현재 실행 환경에 실제로 있는 설정만 시험 서버로 복사한다.
     env = {key: os.environ[key] for key in ("PATH", "HOME", "LD_LIBRARY_PATH") if key in os.environ}
     py_env = dict(env, PYTHONPATH=str(APP), DJANGO_DEBUG="0", DJANGO_SETTINGS_MODULE="config.settings",
                   DJANGO_DATABASE_URL=target_url, GWG_LEGACY_DATABASE_URL=source_url,
@@ -209,15 +192,15 @@ def main():
                           "limitations": "HTML templates and JSON envelope/serialization differ. API records checked before load. Closed-loop localhost load; not maximum production capacity."},
                "parity": {}, "runs": []}
     servers = []
-    # 예외 경계: 본문을 시도하고 . 성공·실패와 관계없이 마지막에 For 구문으로 이어지는 내부 처리를 실행한다.
+    # 아래 작업을 시도하고, 오류가 나면 except에 적힌 방법으로 처리한다. 성공하거나 실패해도 finally의 정리 작업은 실행한다.
     try:
         subprocess.run(["docker", "run", "-d", "--rm", "--name", container,
                         "--memory", "512m", "-e", "POSTGRES_USER=benchmark", "-e", "POSTGRES_PASSWORD=benchmark-only",
                         "-e", "POSTGRES_DB=postgres", "-p", f"127.0.0.1:{port}:5432", "postgres:17"],
                        check=True, stdout=subprocess.DEVNULL)
-        # 반복 `range(150)`: 각 항목을 `_`에 담아 Try 구문으로 이어지는 내부 처리를 실행한다. 항목이 없으면 본문을 건너뛴다. 정상 소진 시 RuntimeError('Benchmark PostgreSQL did not start') 예외를 발생시킨다.
+        # 정해 둔 횟수만큼 시도하거나 측정을 반복한다.
         for _ in range(150):
-            # 예외 경계: 본문을 시도하고 `psycopg.OperationalError` 발생 시 먼저 `time.sleep(0.2)`를 실행한다.
+            # 아래 작업을 시도하고, 오류가 나면 except에 적힌 방법으로 처리한다.
             try:
                 with psycopg.connect(base_url + "/postgres", autocommit=True) as connection:
                     connection.execute('CREATE DATABASE gwg_next_bench')
@@ -228,7 +211,7 @@ def main():
         else:
             raise RuntimeError("Benchmark PostgreSQL did not start")
         seed(source_url)
-        # 반복 `([sys.executable, str(APP / 'manage.py'), 'migrate', '--noinput'], [sys.executable, str(APP / 'manage.py'), 'import_legacy', '--apply'], [sys.executable, str(APP / 'manage.py'), 'import_legacy', '--verify'], [str(Path(sys.executable).with_name('pynext')), 'build', '--dir', str(APP)])`: 각 항목을 `command`에 담아 먼저 `subprocess.run(command, env=py_env, check=True, stdout=subprocess.DEVNULL)`를 실행한다. 항목이 없으면 본문을 건너뛴다.
+        # 준비한 목록을 하나씩 읽어 아래 작업을 반복한다. 목록이 비어 있으면 건너뛴다.
         for command in ([sys.executable, str(APP / "manage.py"), "migrate", "--noinput"],
                         [sys.executable, str(APP / "manage.py"), "import_legacy", "--apply"],
                         [sys.executable, str(APP / "manage.py"), "import_legacy", "--verify"],
@@ -240,34 +223,29 @@ def main():
                 servers.append(subprocess.Popen([sys.executable, str(APP / "serve.py"), "--port", str(py_port), "--workers", "1"], cwd=APP, env=py_env, stdout=py_log, stderr=py_log))
                 wait_ready(servers[0], next_port, "/")
                 wait_ready(servers[1], py_port, "/health/database")
-                # 반복 `(('/api/market', 'posts'), (PATHS[-1], 'posts'), ('/api/clubs', 'clubs'))`: 각 항목을 `(path, key)`에 담아 먼저 `values = []`로 상태 또는 조회 조건을 갱신한다. 항목이 없으면 본문을 건너뛴다.
+                # 준비한 목록을 하나씩 읽어 아래 작업을 반복한다. 목록이 비어 있으면 건너뛴다.
                 for path, key in (("/api/market", "posts"), (PATHS[-1], "posts"), ("/api/clubs", "clubs")):
                     values = []
-                    # 반복 `(next_port, py_port)`: 각 항목을 `engine_port`에 담아 With 구문으로 이어지는 내부 처리를 실행한다. 항목이 없으면 본문을 건너뛴다.
+                    # 준비한 목록을 하나씩 읽어 아래 작업을 반복한다. 목록이 비어 있으면 건너뛴다.
                     for engine_port in (next_port, py_port):
                         with urlopen(f"http://127.0.0.1:{engine_port}{path}") as response:
                             values.append(json.load(response))
-                    # Timestamp offsets are equivalent but serializations differ.
-                    # 반복 `values`: 각 항목을 `result`에 담아 For 구문으로 이어지는 내부 처리를 실행한다. 항목이 없으면 본문을 건너뛴다.
+                    # 준비한 목록을 하나씩 읽어 아래 작업을 반복한다. 목록이 비어 있으면 건너뛴다.
                     for result in values:
-                        # 반복 `result[key]`: 각 항목을 `row`에 담아 먼저 `row.pop('createdAt', None)`를 실행한다. 항목이 없으면 본문을 건너뛴다.
+                        # 준비한 목록을 하나씩 읽어 아래 작업을 반복한다. 목록이 비어 있으면 건너뛴다.
                         for row in result[key]:
                             row.pop("createdAt", None)
                     differences = {}
-                    # 조건 분기 `key == 'clubs'`: 참이면 먼저 `differences['recruiting'] = sum((a['recruiting'] != b['recruiting'] for a, b in zip(values[0][key], values[1][key])))`로 상태 또는 조회 조건을 갱신한다. 거짓이면 이 블록을 건너뛰고 이후 코드로 진행한다.
+                    # 동아리 목록 응답은 해당 응답 구조에 맞추어 비교한다.
                     if key == "clubs":
-                        # Legacy Drizzle emits an unqualified "id" in the
-                        # recruitment subquery, comparing r.club_id to r.id.
-                        # Preserve the baseline and report this computed-field
-                        # defect rather than changing either implementation.
                         differences["recruiting"] = sum(a["recruiting"] != b["recruiting"]
                             for a, b in zip(values[0][key], values[1][key]))
-                        # 반복 `values`: 각 항목을 `result`에 담아 For 구문으로 이어지는 내부 처리를 실행한다. 항목이 없으면 본문을 건너뛴다.
+                        # 준비한 목록을 하나씩 읽어 아래 작업을 반복한다. 목록이 비어 있으면 건너뛴다.
                         for result in values:
-                            # 반복 `result[key]`: 각 항목을 `row`에 담아 먼저 `row.pop('recruiting')`를 실행한다. 항목이 없으면 본문을 건너뛴다.
+                            # 준비한 목록을 하나씩 읽어 아래 작업을 반복한다. 목록이 비어 있으면 건너뛴다.
                             for row in result[key]:
                                 row.pop("recruiting")
-                    # 조건 분기 `values[0][key] != values[1][key]`: 참이면 RuntimeError(f'Fixture/API parity failed for {path}') 예외를 발생시킨다. 거짓이면 이 블록을 건너뛰고 이후 코드로 진행한다.
+                    # 두 구현에서 읽은 데이터가 다르면 같은 조건의 비교가 아니므로 중단한다.
                     if values[0][key] != values[1][key]:
                         raise RuntimeError(f"Fixture/API parity failed for {path}")
                     results["parity"][path] = {"matching_listing_records": len(values[0][key]),
@@ -275,16 +253,17 @@ def main():
                 results["method"]["nextjs_version"] = json.loads((ROOT / "node_modules/next/package.json").read_text())["version"]
                 results["method"]["pynext_version"] = "0.1.2 (ASGI/Uvicorn)"
                 engines = [("nextjs", next_port, servers[0].pid), ("pynext", py_port, servers[1].pid)]
-                # 반복 `PATHS`: 각 항목을 `path`에 담아 For 구문으로 이어지는 내부 처리를 실행한다. 항목이 없으면 본문을 건너뛴다.
+                # 준비한 목록을 하나씩 읽어 아래 작업을 반복한다. 목록이 비어 있으면 건너뛴다.
                 for path in PATHS:
-                    # 반복 `engines`: 각 항목을 `(_, engine_port, pid)`에 담아 먼저 `sample(engine_port, path, 1, 0.5, pid)`를 실행한다. 항목이 없으면 본문을 건너뛴다.
+                    # 준비한 목록을 하나씩 읽어 아래 작업을 반복한다. 목록이 비어 있으면 건너뛴다.
                     for _, engine_port, pid in engines:
                         sample(engine_port, path, 1, 0.5, pid)
-                    # 반복 `args.concurrency`: 각 항목을 `concurrency`에 담아 For 구문으로 이어지는 내부 처리를 실행한다. 항목이 없으면 본문을 건너뛴다.
+                    # 준비한 목록을 하나씩 읽어 아래 작업을 반복한다. 목록이 비어 있으면 건너뛴다.
                     for concurrency in args.concurrency:
-                        # 반복 `range(args.repeats)`: 각 항목을 `repeat`에 담아 For 구문으로 이어지는 내부 처리를 실행한다. 항목이 없으면 본문을 건너뛴다.
+                        # 정해 둔 횟수만큼 시도하거나 측정을 반복한다.
                         for repeat in range(args.repeats):
-                            # 반복 `engines if repeat % 2 == 0 else list(reversed(engines))`: 각 항목을 `(engine, engine_port, pid)`에 담아 먼저 `row = sample(engine_port, path, concurrency, args.seconds, pid)`로 상태 또는 조회 조건을 갱신한다. 항목이 없으면 본문을 건너뛴다.
+                            # 준비한 목록을 하나씩 읽어 아래 작업을 반복한다. 목록이 비어 있으면 건너뛴다.
+                            # 반복마다 서버 측정 순서를 번갈아 바꿔 먼저 실행하는 쪽의 유리함을 줄인다.
                             for engine, engine_port, pid in (engines if repeat % 2 == 0 else list(reversed(engines))):
                                 row = sample(engine_port, path, concurrency, args.seconds, pid)
                                 row.update(engine=engine, path=path, concurrency=concurrency, repeat=repeat + 1)
@@ -292,12 +271,12 @@ def main():
                             args.output.write_text(json.dumps(results, ensure_ascii=False, indent=2) + "\n")
                         print(f"Completed {path} concurrency={concurrency}", flush=True)
     finally:
-        # 반복 `servers`: 각 항목을 `server`에 담아 먼저 `server.terminate()`를 실행한다. 항목이 없으면 본문을 건너뛴다.
+        # 준비한 목록을 하나씩 읽어 아래 작업을 반복한다. 목록이 비어 있으면 건너뛴다.
         for server in servers:
             server.terminate()
-        # 반복 `servers`: 각 항목을 `server`에 담아 Try 구문으로 이어지는 내부 처리를 실행한다. 항목이 없으면 본문을 건너뛴다.
+        # 준비한 목록을 하나씩 읽어 아래 작업을 반복한다. 목록이 비어 있으면 건너뛴다.
         for server in servers:
-            # 예외 경계: 본문을 시도하고 `subprocess.TimeoutExpired` 발생 시 먼저 `server.kill()`를 실행한다.
+            # 아래 작업을 시도하고, 오류가 나면 except에 적힌 방법으로 처리한다.
             try:
                 server.wait(timeout=20)
             except subprocess.TimeoutExpired:
@@ -306,11 +285,11 @@ def main():
         subprocess.run(["docker", "stop", container], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     errors = sum(row["errors"] for row in results["runs"])
     print(f"Saved {args.output}; requests={sum(row['requests'] for row in results['runs'])}, errors={errors}")
-    # 조건 분기 `errors`: 참이면 SystemExit(1) 예외를 발생시킨다. 거짓이면 이 블록을 건너뛰고 이후 코드로 진행한다.
+    # 시험 중 오류가 하나라도 발생했다면 성공한 측정값으로 기록하지 않는다.
     if errors:
         raise SystemExit(1)
 
 
-# 조건 분기 `__name__ == '__main__'`: 참이면 먼저 `main()`를 실행한다. 거짓이면 이 블록을 건너뛰고 이후 코드로 진행한다.
+# 다른 파일에서 불러올 때는 실행하지 않고, 이 파일을 직접 실행할 때만 아래 시작 코드를 실행한다.
 if __name__ == "__main__":
     main()

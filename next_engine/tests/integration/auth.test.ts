@@ -1,4 +1,3 @@
-/* 제출용 주석: 함수 역할, 조건의 참·거짓 결과, 단락 평가 및 예외·반복 경로를 설명한다. */
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
@@ -13,19 +12,19 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "../../src/lib/db/schema";
 import { consumeInvitationAttempt } from "../../src/lib/auth/invitation-attempts";
 
-// SMTP is deliberately bound to loopback and never relays a message.
-// 기능 `콜백`(t): 먼저 `const adminUrl = process.env.TEST_DATABASE_URL;`를 실행한다.
+// 테스트용 메일 서버는 이 컴퓨터 안에서만 접속할 수 있고 실제 외부 메일은 보내지 않는다.
+// 이름에 적힌 상황에서 결과가 예상대로 나오는지 확인하는 테스트다.
 test("HTTP signup, verification, invitation, authorization and sign-out", { timeout: 120_000 }, async (t) => {
   const adminUrl = process.env.TEST_DATABASE_URL;
-  // 조건 `!adminUrl`: 참이면 `new Error("TEST_DATABASE_URL must point to a local PostgreSQL server with CREATE DATABASE permission")` 예외를 발생시킨다. 거짓이면 별도 처리 없이 다음 구문으로 진행한다.
+  // 확인할 조건: adminUrl 없음 또는 false. 해당하면 오류를 알려서 이 요청의 처리를 중단한다.
   if (!adminUrl) throw new Error("TEST_DATABASE_URL must point to a local PostgreSQL server with CREATE DATABASE permission");
   const parsed = new URL(adminUrl);
-  // 조건 `!["localhost", "127.0.0.1", "::1", "[::1]"].includes(parsed.hostname)`: 참이면 `new Error("HTTP authentication tests require local PostgreSQL")` 예외를 발생시킨다. 거짓이면 별도 처리 없이 다음 구문으로 진행한다.
+  // 확인할 조건: 항목 목록에 parsed의 hostname이 포함됨 조건을 만족하지 않음. 해당하면 오류를 알려서 이 요청의 처리를 중단한다.
   if (!["localhost", "127.0.0.1", "::1", "[::1]"].includes(parsed.hostname)) throw new Error("HTTP authentication tests require local PostgreSQL");
   const databaseName = `gwg_auth_${randomUUID().replaceAll("-", "")}`;
   const adminPool = new Pool({ connectionString: adminUrl });
   let databaseCreated = false;
-  // Assigned after the cleanup hook is installed so setup failures are cleaned up too.
+  // 테스트 준비 중에 실패해도 정리할 수 있도록 정리 방법을 먼저 등록한다.
   /* eslint-disable prefer-const */
   let app: ReturnType<typeof spawn> | undefined;
   let smtp: net.Server | undefined;
@@ -33,26 +32,23 @@ test("HTTP signup, verification, invitation, authorization and sign-out", { time
   let dir: string | undefined;
   /* eslint-enable prefer-const */
   const sockets = new Set<net.Socket>();
-  // 기능 `콜백`(): `app?.pid && app.exitCode === null` 조건을 추가로 검사한다.
+  // 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
   t.after(async () => {
-    // 조건 `app?.pid && app.exitCode === null`: 참이면 먼저 `process.kill(-app.pid, "SIGTERM");`를 실행한다. 거짓이면 별도 처리 없이 다음 구문으로 진행한다.
-    // 단락 분기 `app?.pid`: 참인 경우에만 오른쪽 `app.exitCode === null`를 평가한다. 그 외에는 왼쪽 값을 유지한다.
+    // 확인할 조건: (app의 pid 있음 또는 true) 그리고 (app의 exitCode = 값 없음). 해당하면 아래에 있는 작업을 실행한다.
     if (app?.pid && app.exitCode === null) {
       process.kill(-app.pid, "SIGTERM");
-      // 기능 `콜백`(resolve): `app!.once("exit", () => resolve())` 평가 결과를 반환한다.
-      // 기능 `콜백`(): `resolve()` 평가 결과를 반환한다.
+      // 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
       await new Promise<void>((resolve) => app!.once("exit", () => resolve()));
     }
     await pool?.end();
-    // 반복 `sockets`: 각 값를 `const socket`에 바인딩한다. 대상이 비었으면 본문을 건너뛴다.
+    // sockets의 항목을 하나씩 꺼내 아래 작업을 반복한다. 항목이 없으면 건너뛴다.
     for (const socket of sockets) socket.destroy();
-    // 조건 `smtp?.listening`: 참이면 먼저 `await new Promise<void>((resolve) => smtp!.close(() => resolve()));`를 실행한다. 거짓이면 별도 처리 없이 다음 구문으로 진행한다.
-    // 기능 `콜백`(resolve): `smtp!.close(() => resolve())` 평가 결과를 반환한다.
-    // 기능 `콜백`(): `resolve()` 평가 결과를 반환한다.
+    // 확인할 조건: smtp의 listening 있음 또는 true. 해당하면 아래에 있는 작업을 실행한다.
+    // 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
     if (smtp?.listening) await new Promise<void>((resolve) => smtp!.close(() => resolve()));
-    // 조건 `dir`: 참이면 먼저 `rmSync(dir, { recursive: true, force: true });`를 실행한다. 거짓이면 별도 처리 없이 다음 구문으로 진행한다.
+    // 확인할 조건: dir 있음 또는 true. 해당하면 아래에 있는 작업을 실행한다.
     if (dir) rmSync(dir, { recursive: true, force: true });
-    // 조건 `databaseCreated`: 참이면 먼저 `await adminPool.query(`DROP DATABASE "${databaseName}" WITH (FORCE)`);`를 실행한다. 거짓이면 별도 처리 없이 다음 구문으로 진행한다.
+    // 확인할 조건: databaseCreated 있음 또는 true. 해당하면 아래에 있는 작업을 실행한다.
     if (databaseCreated) await adminPool.query(`DROP DATABASE "${databaseName}" WITH (FORCE)`);
     await adminPool.end();
   });
@@ -66,35 +62,32 @@ test("HTTP signup, verification, invitation, authorization and sign-out", { time
   execFileSync("openssl", ["req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout", key, "-out", cert, "-days", "1", "-subj", "/CN=localhost", "-addext", "subjectAltName=DNS:localhost"], { stdio: "ignore" });
   const secureContext = tls.createSecureContext({ key: readFileSync(key), cert: readFileSync(cert) });
   const messages: string[] = [];
-  // 기능 `콜백`(socket): 먼저 `sockets.add(socket);`를 실행한다.
+  // 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
   smtp = net.createServer((socket) => {
     sockets.add(socket);
-    // 기능 `콜백`(): `sockets.delete(socket)` 평가 결과를 반환한다.
+    // 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
     socket.on("close", () => sockets.delete(socket));
     socket.write("220 localhost test SMTP\r\n");
     let buffer = "";
     let data = false;
     let message = "";
     let auth = false;
-    // 기능 `attach`(connection): 먼저 `connection.on("data", function onData(chunk: Buffer) { buffer += chunk.toString(); let end: number; while ((end = buffer.indexOf("\r\n")) !== -1) { const line = buffer.slice(0, end); buffer = buffer.slice(end + 2); if (data) { if (line === ".") { messages.push(message); message = ""; data = false; connection.write("250 accepted\r\n"); } else message += `${line}\n`; } else if (auth) { auth = false; connection.write("235 authenticated\r\n"); } else if (/^EHLO/i.test(line)) connection.write("250-localhost\r\n250-STARTTLS\r\n250 AUTH PLAIN LOGIN\r\n"); else if (/^STARTTLS/i.test(line)) { connection.write("220 ready for TLS\r\n"); connection.removeListener("data", onData); const encrypted = new tls.TLSSocket(connection, { isServer: true, secureContext }); encrypted.on("error", () => {}); attach(encrypted); return; } else if (/^AUTH PLAIN /i.test(line)) connection.write("235 authenticated\r\n"); else if (/^AUTH/i.test(line)) { auth = true; connection.write("334 \r\n"); } else if (/^DATA/i.test(line)) { data = true; connection.write("354 send data\r\n"); } else if (/^QUIT/i.test(line)) { connection.end("221 bye\r\n"); return; } else connection.write("250 ok\r\n"); } });`를 실행한다.
+    // 현재 사용자의 이미지만 글에 연결하고 다른 글에 이미 쓰인 이미지는 막는다.
     function attach(connection: net.Socket | tls.TLSSocket) {
-      // 기능 `onData`(chunk): 먼저 `buffer += chunk.toString();`를 실행한다.
+      // 테스트용 메일 서버로 들어온 내용을 읽고 SMTP 단계에 맞춰 응답한다.
       connection.on("data", function onData(chunk: Buffer) {
         buffer += chunk.toString();
         let end: number;
-        // 반복 조건 `(end = buffer.indexOf("\r\n")) !== -1`: 조건이 참인 동안 본문을 실행하고 거짓이면 반복을 종료한다.
         while ((end = buffer.indexOf("\r\n")) !== -1) {
           const line = buffer.slice(0, end); buffer = buffer.slice(end + 2);
-          // 조건 `data`: 참이면 `line === "."` 조건을 추가로 검사한다. 거짓이면 `auth` 조건을 추가로 검사한다.
-          // 조건 `auth`: 참이면 먼저 `auth = false;`를 실행한다. 거짓이면 `/^EHLO/i.test(line)` 조건을 추가로 검사한다.
-          // 조건 `/^EHLO/i.test(line)`: 참이면 먼저 `connection.write("250-localhost\r\n250-STARTTLS\r\n250 AUTH PLAIN LOGIN\r\n");`를 실행한다. 거짓이면 `/^STARTTLS/i.test(line)` 조건을 추가로 검사한다.
-          // 조건 `/^STARTTLS/i.test(line)`: 참이면 먼저 `connection.write("220 ready for TLS\r\n");`를 실행한다. 거짓이면 `/^AUTH PLAIN /i.test(line)` 조건을 추가로 검사한다.
-          // 조건 `/^AUTH PLAIN /i.test(line)`: 참이면 먼저 `connection.write("235 authenticated\r\n");`를 실행한다. 거짓이면 `/^AUTH/i.test(line)` 조건을 추가로 검사한다.
-          // 조건 `/^AUTH/i.test(line)`: 참이면 먼저 `auth = true;`를 실행한다. 거짓이면 `/^DATA/i.test(line)` 조건을 추가로 검사한다.
-          // 조건 `/^DATA/i.test(line)`: 참이면 먼저 `data = true;`를 실행한다. 거짓이면 `/^QUIT/i.test(line)` 조건을 추가로 검사한다.
-          // 조건 `/^QUIT/i.test(line)`: 참이면 먼저 `connection.end("221 bye\r\n");`를 실행한다. 거짓이면 먼저 `connection.write("250 ok\r\n");`를 실행한다.
+          // 확인할 조건: 저장하거나 받은 자료 있음 또는 true. 해당하면 추가 조건을 한 번 더 확인한다. 해당하지 않으면 추가 조건을 한 번 더 확인한다.
+          // 확인할 조건: auth 있음 또는 true. 해당하면 auth을 사용하지 않음으로 바꾼다. 해당하지 않으면 추가 조건을 한 번 더 확인한다.
+          // 확인할 조건: line의 형식이 맞음 있음 또는 true. 해당하면 아래에 있는 작업을 실행한다. 해당하지 않으면 추가 조건을 한 번 더 확인한다.
+          // 확인할 조건: line의 형식이 맞음 있음 또는 true. 해당하면 auth을 사용함으로 바꾼다. 해당하지 않으면 추가 조건을 한 번 더 확인한다.
+          // 확인할 조건: line의 형식이 맞음 있음 또는 true. 해당하면 저장하거나 받은 자료를 사용함으로 바꾼다. 해당하지 않으면 추가 조건을 한 번 더 확인한다.
+          // 확인할 조건: line의 형식이 맞음 있음 또는 true. 해당하면 아래에 있는 작업을 실행한다. 해당하지 않으면 아래에 있는 작업을 실행한다.
           if (data) {
-            // 조건 `line === "."`: 참이면 먼저 `messages.push(message);`를 실행한다. 거짓이면 먼저 `message += `${line}\n`;`를 실행한다.
+            // 확인할 조건: line = “.”. 해당하면 아래에 있는 작업을 실행한다. 해당하지 않으면 아래에 있는 작업을 실행한다.
             if (line === ".") { messages.push(message); message = ""; data = false; connection.write("250 accepted\r\n"); }
             else message += `${line}\n`;
           } else if (auth) { auth = false; connection.write("235 authenticated\r\n"); }
@@ -103,7 +96,7 @@ test("HTTP signup, verification, invitation, authorization and sign-out", { time
             connection.write("220 ready for TLS\r\n");
             connection.removeListener("data", onData);
             const encrypted = new tls.TLSSocket(connection, { isServer: true, secureContext });
-            // 기능 `콜백`(): 별도 처리 없이 다음 구문으로 진행한다.
+            // 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
             encrypted.on("error", () => {}); attach(encrypted); return;
           } else if (/^AUTH PLAIN /i.test(line)) connection.write("235 authenticated\r\n");
           else if (/^AUTH/i.test(line)) { auth = true; connection.write("334 \r\n"); }
@@ -115,15 +108,14 @@ test("HTTP signup, verification, invitation, authorization and sign-out", { time
     }
     attach(socket);
   });
-  // 기능 `콜백`(resolve): `smtp.listen(0, "127.0.0.1", resolve)` 평가 결과를 반환한다.
+  // 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
   await new Promise<void>((resolve) => smtp.listen(0, "127.0.0.1", resolve));
   const port = (smtp.address() as net.AddressInfo).port;
   const reservation = net.createServer();
-  // 기능 `콜백`(resolve): `reservation.listen(0, "127.0.0.1", resolve)` 평가 결과를 반환한다.
+  // 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
   await new Promise<void>((resolve) => reservation.listen(0, "127.0.0.1", resolve));
   const appPort = (reservation.address() as net.AddressInfo).port;
-  // 기능 `콜백`(resolve): `reservation.close(() => resolve())` 평가 결과를 반환한다.
-  // 기능 `콜백`(): `resolve()` 평가 결과를 반환한다.
+  // 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
   await new Promise<void>((resolve) => reservation.close(() => resolve()));
   const baseURL = `http://127.0.0.1:${appPort}`;
   const invitationSecret = "auth-test-invitation-secret-at-least-32-bytes";
@@ -134,9 +126,9 @@ test("HTTP signup, verification, invitation, authorization and sign-out", { time
     stdio: ["ignore", "pipe", "pipe"], detached: true,
   });
   let appOutput = "";
-  // 기능 `콜백`(data): 먼저 `appOutput += data.toString();`를 실행한다.
+  // 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
   app.stdout?.on("data", (data) => { appOutput += data.toString(); });
-  // 기능 `콜백`(data): 먼저 `appOutput += data.toString();`를 실행한다.
+  // 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
   app.stderr?.on("data", (data) => { appOutput += data.toString(); });
   pool = new Pool({ connectionString: databaseUrl });
   const db = drizzle(pool, { schema });
@@ -144,20 +136,19 @@ test("HTTP signup, verification, invitation, authorization and sign-out", { time
   let userId: string | undefined;
   {
     let ready = false;
-    // 반복 조건 `i < 100`: 조건이 참인 동안 본문을 실행하고 거짓이면 반복을 종료한다.
+    // i < 100 아래 작업을 반복한다.
     for (let i = 0; i < 100; i++) {
-      // 조건 `app.exitCode !== null`: 참이면 `new Error(`Next.js exited: ${appOutput}`)` 예외를 발생시킨다. 거짓이면 별도 처리 없이 다음 구문으로 진행한다.
+      // 확인할 조건: app의 exitCode ≠ 값 없음. 해당하면 오류를 알려서 이 요청의 처리를 중단한다.
       if (app.exitCode !== null) throw new Error(`Next.js exited: ${appOutput}`);
-      // 예외 처리: 본문 실행 중 예외가 발생하면 먼저 `await new Promise((resolve) => setTimeout(resolve, 300));`를 실행한다.
-      // 기능 `콜백`(resolve): `setTimeout(resolve, 300)` 평가 결과를 반환한다.
+      // 아래 작업을 시도한다. 실패하면 아래에 있는 작업을 실행한다.
+      // 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
       try { await fetch(`${baseURL}/api/me`, { signal: AbortSignal.timeout(2_000) }); ready = true; break; } catch { await new Promise((resolve) => setTimeout(resolve, 300)); }
     }
     assert.ok(ready, `Next.js did not start: ${appOutput}`);
-    // 기능 `call`(path, body, cookie, origin): `fetch(`${baseURL}${path}`, { method: body ? "POST" : "GET", headers: { origin, ...(body ? { "content-type": "application/json" } : {}), ...(cookie ? { cookie } : {}) }, redirect: "manual", ...(body ? { body: JSON.stringify(body) } : {}), })` 평가 결과를 반환한다.
-    // 선택 조건 `body`: 참이면 `"POST"`, 거짓이면 `"GET"`를 사용한다.
-    // 선택 조건 `body`: 참이면 `{ "content-type": "application/json" }`, 거짓이면 `{}`를 사용한다.
-    // 선택 조건 `cookie`: 참이면 `{ cookie }`, 거짓이면 `{}`를 사용한다.
-    // 선택 조건 `body`: 참이면 `{ body: JSON.stringify(body) }`, 거짓이면 `{}`를 사용한다.
+    // 테스트 요청을 서버에 보내고 응답을 확인할 수 있는 형태로 돌려준다.
+    // 선택 기준: 요청 내용 있음 또는 true. 맞으면 “등록” 값을 사용하고, 아니면 “조회” 값을 사용한다.
+    // 선택 기준: 요청 내용 있음 또는 true. 맞으면 필요한 항목을 묶은 자료를 사용하고, 아니면 필요한 항목을 묶은 자료를 사용한다.
+    // 선택 기준: cookie 있음 또는 true. 맞으면 필요한 항목을 묶은 자료를 사용하고, 아니면 필요한 항목을 묶은 자료를 사용한다.
     const call = (path: string, body?: object, cookie?: string, origin = baseURL) => fetch(`${baseURL}${path}`, {
       method: body ? "POST" : "GET",
       headers: { origin, ...(body ? { "content-type": "application/json" } : {}), ...(cookie ? { cookie } : {}) },
@@ -173,7 +164,7 @@ test("HTTP signup, verification, invitation, authorization and sign-out", { time
     response = await call("/api/auth/sign-in/email", { email, password });
     assert.equal(response.status, 403);
     assert.ok(messages.length >= 1, "verification email was delivered to loopback SMTP");
-    // 기능 `콜백`(_, hex): `String.fromCharCode(parseInt(hex, 16))` 평가 결과를 반환한다.
+    // 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
     const decoded = messages[0].replace(/=\n/g, "").replace(/=([A-F0-9]{2})/g, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)));
     const verificationUrl = decoded.match(/http:\/\/127\.0\.0\.1:\d+\/api\/auth\/verify-email\?[^\s]+/)?.[0];
     assert.ok(verificationUrl, "verification link is present in the SMTP message");
@@ -212,7 +203,7 @@ test("HTTP signup, verification, invitation, authorization and sign-out", { time
     assert.equal(response.status, 201, await response.clone().text());
     const invitation = await response.json() as { code: string };
     await pool.query('UPDATE "user" SET role=$1, status=$2 WHERE id=$3', ["student", "VERIFIED_PENDING_INVITE", userId]);
-    // 기능 `콜백`(): `consumeInvitationAttempt(db, userId!)` 평가 결과를 반환한다.
+    // 이 화면 요소에 연결한 동작을 사용자의 입력이나 클릭에 맞춰 실행한다.
     const concurrentAttempts = await Promise.all(Array.from({ length: 12 }, () => consumeInvitationAttempt(db, userId!)));
     assert.equal(concurrentAttempts.filter(Boolean).length, 5, "concurrent attempts cannot exceed the shared limit");
     assert.equal(await consumeInvitationAttempt(db, userId!), false);
@@ -228,8 +219,8 @@ test("HTTP signup, verification, invitation, authorization and sign-out", { time
     response = await call("/api/finder", finderInput, cookie);
     assert.equal(response.status, 201, await response.clone().text());
     const finderId = (await response.json()).post.id;
-    // 기능 `mutateFinder`(method, body, sessionCookie, origin, id): `fetch(`${baseURL}/api/finder/${id}`, { method, headers: { origin, "content-type": "application/json", cookie: sessionCookie }, ...(body ? { body: JSON.stringify(body) } : {}), })` 평가 결과를 반환한다.
-    // 선택 조건 `body`: 참이면 `{ body: JSON.stringify(body) }`, 거짓이면 `{}`를 사용한다.
+    // 분실물 수정 요청을 보내 권한과 변경 결과를 테스트한다.
+    // 선택 기준: 요청 내용 있음 또는 true. 맞으면 필요한 항목을 묶은 자료를 사용하고, 아니면 필요한 항목을 묶은 자료를 사용한다.
     const mutateFinder = (method: string, body?: object, sessionCookie = cookie, origin = baseURL, id = finderId) => fetch(`${baseURL}/api/finder/${id}`, {
       method, headers: { origin, "content-type": "application/json", cookie: sessionCookie },
       ...(body ? { body: JSON.stringify(body) } : {}),

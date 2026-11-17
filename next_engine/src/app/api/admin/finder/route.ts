@@ -1,15 +1,14 @@
-/* 제출용 주석: 함수 역할, 조건의 참·거짓 결과, 단락 평가 및 예외·반복 경로를 설명한다. */
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { actor, failure } from "@/features/moderation/http";
 import { listPendingFinder } from "@/features/moderation/service";
-// 관리자의 분실물 심사 대기 목록을 조회한다.
-// 기능 `GET`(): 먼저 `const { viewer, error: authError } = await actor(true);`를 실행한다.
+// 관리자의 분실물 심사 대기 목록을 불러온다.
+// 조회 요청을 받아 분실물 처리를 하고 결과를 돌려준다.
 export async function GET() {
   const { viewer, error: authError } = await actor(true);
-  // 조건 `authError`: 참이면 `authError`를 반환한다. 거짓이면 별도 처리 없이 다음 구문으로 진행한다.
+  // 확인할 조건: authError 있음 또는 true. 해당하면 authError을 돌려준다.
   if (authError) return authError;
-  // 예외 처리: 본문 실행 중 예외가 발생하면 `failure(error)`를 반환한다.
+  // 아래 작업을 시도한다. 실패하면 요청을 처리할 수 없다는 안내를 돌려준다.
   try { return NextResponse.json({ posts: await listPendingFinder(getDb(), viewer.id) }, { headers: { "Cache-Control": "no-store" } }); }
   catch (error) { return failure(error); }
 }

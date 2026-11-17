@@ -12,7 +12,3 @@ WSGI 서버는 실행하지 않는다. `python_app/`과 `next_engine/`은 이전
 - [Next.js 대 PyNext 부하 테스트](pynext_app/benchmarks/RESULTS.md)
 
 PyNext는 실험판이며 이 배포는 제작자가 요청한 검증 서비스다. 비밀값·DB 백업·업로드는 Git에 포함하지 않는다.
-
-## 제출용 주석과 구현 현황
-
-[제출 안내 및 구현 미반영 목록](docs/SUBMISSION.md)을 확인한다. 함수·조건·예외·반복·화면 분기의 설명은 각 소스에 포함되어 있다.
